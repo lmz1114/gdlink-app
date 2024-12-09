@@ -1,9 +1,9 @@
 <template>
   <DefaultLayout>
     <template #default>
-      <SearchBar v-if="role!='academicoffice'" class="bg-white"/>
+      <SearchBar class="bg-white"/>
       <section class="border rounded mt-0 shadow-sm bg-white" style="padding: 0.7em">
-        <h4>Welcome to the UTM Resource Center, 
+        <h4 style="vertical-align: middle;">Welcome to the UTM Resource Center, 
           <strong v-if="userSession">{{ userSession.full_name }}</strong>
         !!!</h4>
       </section>

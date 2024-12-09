@@ -23,7 +23,7 @@
   export default {
     name: "ResourceBox",
     props: {
-      svgColor: { type: String, default: "#000" }, // Default color
+      svgColor: { type: String, default: "#000" }, 
       description: { type: String, required: true },
     },
   };
@@ -31,14 +31,14 @@
 
   <style scoped>
   .card-body {
-    display: -webkit-box;             /* Display as a flexbox */
-    -webkit-box-orient: vertical;     /* Stack text vertically */
+    display: -webkit-box;            
+    -webkit-box-orient: vertical;    
     -webkit-line-clamp: 5; 
-    height: 150px;  /* set a fixed height */
-    overflow: hidden;  /* hide overflowed content */
+    height: 150px;  
+    overflow: hidden;  
     text-overflow: ellipsis;
 
-    line-clamp: 5;                   /* Standard property for modern browsers */
+    line-clamp: 5;                  
     box-orient: vertical; 
 
   }

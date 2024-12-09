@@ -2,7 +2,7 @@
     <DefaultLayout>
         <template #default>
             <section class="border rounded mt-0 shadow-sm bg-white" style="padding: 1.5em">
-      <h2 style="margin-bottom: 1em;">Resource Upload</h2>
+      <h2 style="margin-bottom: 1em;"><strong>Resource Upload</strong></h2>
       <form>
         <!-- Link Input -->
         <div class="mb-3">
@@ -91,51 +91,48 @@
         </div>
   
         <!-- Share To Dropdown -->
-        <div class="mb-3">
+        <div class="mb-1">
           <label for="shareTo" class="form-label">Share To:</label>
+          <div class = "d-flex">
           <select
             id="shareTo"
             v-model="resource.shareTo"
-            class="form-select"
+            class="form-select me-2"
             required
             @click="handleShareChange">
             <option value="" disabled>Select Share To</option>
             <option value="all">All</option>
             <option value="lecturers">All Lecturers</option>
             <option value="students">All Students</option>
-            <option value="specific">Specific Emails</option>
+            <option value="specific">Specific</option>
           </select>
-        </div>
 
-        <div v-if="resource.shareTo === 'specific'" class="mb-3">
-        <label class="form-label">Specific Emails:</label>
-        <div>
-          <button
+          <button v-if="resource.shareTo === 'specific'"
             type="button"
             class="btn btn-outline-primary mb-2"
             @click="addEmailField"
           >
-            Add Email Field
+            Add Email
           </button>
         </div>
+        </div>
 
-        <div v-for="(email, index) in emailInputs" :key="index" class="input-group mb-2">
-          <input
-            type="email"
-            v-model="emailInputs[index]"
-            class="form-control"
-            placeholder="Enter email"
-            required
-          />
+        <div v-if="resource.shareTo === 'specific'" class="mb-3">
+          <div v-for="(email, index) in emailInputs" :key="index" class="input-group mb-2">
+            <input
+              type="email"
+              v-model="emailInputs[index]"
+              class="form-control"
+              placeholder="Enter email"
+              required
+            />
           </div>
-      </div>
+        </div>
 
-  
-        <!-- Buttons -->
         <div class="d-flex justify-content-end">
           <button
             type="button"
-            class="btn btn-secondary me-2"
+            class="btn btn-danger me-2"
             @click="cancelUpload"
           >
             Cancel
@@ -187,7 +184,7 @@
       },
       handleShareChange() {
       if (this.resource.shareTo !== "specific") {
-        // Clear all email fields when switching from "Specific Emails"
+        // Clear all email fields when switching from "Specific"
         this.emailInputs = [""];
       }
     },
@@ -211,6 +208,10 @@
   <style scoped>
   .bg-white{
     background-color: white;
+  }
+
+  .form-select {
+    max-width: 180px;
   }
   </style>
   

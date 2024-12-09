@@ -15,11 +15,11 @@
       <hr>
       
       <div>
-        <SideBarTab :items="navItems" @updateActiveIndex="setActive" />
+        <SideBarTab :items="navItems"/>
       </div>
 
-      <div class="d-flex justify-content-center align-items-end vh-100" @click="navUploadForm">
-        <div class="rounded d-flex flex-column justify-content-center align-items-center upload-effect shadow" style="background-color: #D36B6C; width: 150px; height: 100px;">
+      <div class="d-flex justify-content-center align-items-end vh-100">
+        <div class="rounded d-flex flex-column justify-content-center align-items-center upload-effect shadow" style="background-color: #D36B6C; width: 150px; height: 100px;" @click="navUploadForm">
           <svg width="25" height="36" viewBox="0 0 25 36" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14.5833 9.5625V0H1.5625C0.696615 0 0 0.752344 0 1.6875V34.3125C0 35.2477 0.696615 36 1.5625 36H23.4375C24.3034 36 25 35.2477 25 34.3125V11.25H16.1458C15.2865 11.25 14.5833 10.4906 14.5833 9.5625ZM18.8268 24.7507H14.5833V30.3757C14.5833 30.9973 14.1172 31.5007 13.5417 31.5007H11.4583C10.8828 31.5007 10.4167 30.9973 10.4167 30.3757V24.7507H6.17318C5.24349 24.7507 4.7793 23.535 5.43945 22.827L11.7168 16.098C12.1497 15.6333 12.849 15.6333 13.2819 16.098L19.5592 22.827C20.2201 23.535 19.7565 24.7507 18.8268 24.7507ZM24.5443 7.38281L18.1706 0.492188C17.8776 0.175781 17.4805 0 17.0638 0H16.6667V9H25V8.57109C25 8.12813 24.8372 7.69922 24.5443 7.38281Z" fill="white"/>
           </svg>
@@ -52,14 +52,12 @@ import SideBarTab from './SideBarTab.vue';
       SideBarTab,
     },
     data() {
-      return {
-        userSession: null,
-        navItems: [
-          { name: 'Home', link: '/', isActive: true, icon: 'home', },
-          { name: 'Favourites', link: '/favourites', isActive: false, icon: 'favourites' },
-          { name: 'My Uploads', link: '/my_uploads', isActive: false, icon: 'myuploads' },
-          { name: 'Shared with me', link: '/shared_with_me', isActive: false, icon: 'sharewithme' },
-          { name: 'Category', link: '/category', isActive: false, icon: 'category', 
+      const navItems = [
+          { name: 'Home', link: '/', icon: 'home', },
+          { name: 'Favourites', link: '/favourites', icon: 'favourites' },
+          { name: 'My Uploads', link: '/my_uploads', icon: 'myuploads' },
+          { name: 'Shared With Me', link: '/shared_with_me', icon: 'sharewithme' },
+          { name: 'Category', link: '/category', icon: 'category', 
             subItems: [
               { name: 'Timetable', link: '#', isActive: false, icon: 'timetable' },
               { name: 'Research', link: '#', isActive: false, icon: 'research' },
@@ -67,22 +65,15 @@ import SideBarTab from './SideBarTab.vue';
               { name: 'Others', link: '#', isActive: false, icon: 'others' },
             ],
           },
-        ],
-        activateditem: null,
-      }
+      ]
+
+
+      return {
+        userSession: null,
+        navItems,
+      };
     },
     methods:{
-      setActive(item) {
-          this.activateditem.isActive = false;
-          item.isActive = true;
-          this.activateditem = item;
-          this.navTab(item.link);
-      },
-
-      navTab(tab){
-        this.$router.push(tab);
-      },
-
         logout() {
           // Clear sessionStorage and reset local data
           sessionStorage.removeItem('utmwebfc_session');
@@ -101,7 +92,6 @@ import SideBarTab from './SideBarTab.vue';
       }
     },
     mounted() {
-      this.activateditem = this.navItems[0];
       const sessionData = sessionStorage.getItem('utmwebfc_session');
       if (sessionData) {
         this.userSession = JSON.parse(sessionData);
@@ -112,26 +102,6 @@ import SideBarTab from './SideBarTab.vue';
   </script>
   
   <style scoped>
-  .icon-align {
-    vertical-align: middle;
-    margin-bottom: 9px;
-    width: 1.2em;
-    height: 1.2em;
-  }
-
-  .nav-link {
-  color:#000000; /* Replace with your desired color */
-  }
-
-  .nav-link:hover{
-    color: #ffffff;
-    background-color: #b3e0ff;
-  }
-
-  .nav-link.active:hover {
-    background-color: #0d6efd; /* Keep the active color on hover */
-  }
-
   .upload-effect {
   transition: transform 0.3s, background-color 0.3s;
 }
@@ -147,18 +117,11 @@ import SideBarTab from './SideBarTab.vue';
     background-color: #a14a4b; /* Darken background color */
   }
 
-  .ml-auto {
-    display: flex;               /* Enable flexbox */
-    align-items: center;         /* Vertically center the content */
-    justify-content: flex-end;   /* Align content to the right */
-  }
-
   .bottom-div {
-  position: absolute;
-  bottom: 0; /* Keeps the div at the bottom of the sidebar */
-  width: 100%; /* Make sure it spans the width of the sidebar */
-}
-
+    position: absolute;
+    bottom: 0; /* Keeps the div at the bottom of the sidebar */
+    width: 100%; /* Make sure it spans the width of the sidebar */
+  }
   </style>
   
   

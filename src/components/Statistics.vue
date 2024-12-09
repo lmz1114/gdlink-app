@@ -100,11 +100,6 @@ export default {
       Chart.register(plugin);
     },
   },
-  beforeUnmount() {
-    if (this.chart) {
-      this.chart.destroy(); // Clean up the chart instance
-    }
-  },
 };
 </script>
 

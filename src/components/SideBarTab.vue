@@ -1,55 +1,18 @@
 <template>
-    <div>
-      <ul class="nav nav-pills flex-column mb-auto">
-            <li v-for="(item, index) in items" :key="index" class="nav-item">
-            <a v-if="!item.subItems" 
-                :href="item.link" 
-                :class="['nav-link', { active: item.isActive }]" 
-                @click.prevent="handleTabClick(item)">
-                <div class="d-flex align-items-center">
-                    <div v-if="item.icon" class="bi me-2 icon-align" width="16" height="16" v-html="displayIcon(item.icon)"></div>
-                    <span>{{ item.name }}</span>
-                </div>
-            </a>
-  
-          <div v-else>
-            <a href="#" 
-               class=" d-flex justify-content-between align-items-center" 
-               :class="['nav-link', { active: item.isActive }]"
-               data-bs-toggle="collapse" 
-               :data-bs-target="'#collapse' + index" 
-               aria-expanded="false" 
-               :aria-controls="'collapse' + index" 
-               @click.prevent="handleTabClick(item)" @click="toggleRotation">
-              <div class="d-flex align-items-center w-100">
-                <!-- Render icon if provided -->
-                <div v-if="item.icon" class="bi me-2 icon-align" width="16" height="16" v-html="displayIcon(item.icon)"></div>
-                <span class="flex-grow-1">{{ item.name }}</span>
-                <div class="ml-auto">
-                  <svg :class="{'rotate-180': clicked}" class="svg-rotate" width="1em" height="1em" viewBox="0 0 24 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 3L11.9745 12.4745L20.949 3" stroke="black" stroke-width="4.61863" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-            </a>
-  
-            <!-- Render collapsible sub-items -->
-            <ul :id="'collapse' + index" class="collapse list-unstyled ps-4" style="max-height: 120px; overflow-y: auto">
-              <li v-for="(subItem, subIndex) in item.subItems" :key="subIndex">
-                <a :class="['nav-link', { active: subItem.isActive }]" :href="subItem.link" @click.prevent="handleTabClick(subItem)">
-                  <div class="d-flex align-items-center">
-                    <!-- Render sub-item icon if available -->
-                    <div v-if="subItem.icon" class="bi me-2 icon-align" width="16" height="16" v-html="displayIcon(subItem.icon)"></div>
-                    <span>{{ subItem.name }}</span>
-                  </div>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </template>
+    <div class="nav nav-pills flex-column mb-auto">
+    <router-link 
+      v-for="(item, index) in items" 
+      :key="index" 
+      :to="item.link" 
+      class="nav-link" 
+    >
+      <div class="d-flex align-items-center">
+        <span v-if="item.icon" class="bi me-2 icon-align" width="16" height="16" v-html="displayIcon(item.icon)"></span>
+        <span>{{ item.name }}</span>
+      </div>
+    </router-link>
+  </div>
+</template>
   
   <script>
   export default {
@@ -66,15 +29,8 @@
         };
     },
     methods: {
-        toggleRotation() {
-            this.clicked = !this.clicked; // Toggle the state on click
-        },
-
-        handleTabClick(item) {
-            this.$emit('updateActiveIndex', item); // Notify parent component of active index
-        },
         displayIcon(itemicon){
-            console.log('Requested icon:', itemicon);  // Check what icon is being requested
+            console.log('Requested icon:', itemicon);  
 
             switch(itemicon){
                 case 'home': return `<svg viewBox="0 0 67 63" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -131,7 +87,12 @@
   }
 
   .nav-link {
-  color:#000000; /* Replace with your desired color */
+    color:#000000; 
+  }
+
+  .router-link-exact-active,.router-link-exact-active:hover {
+    background-color: #0d6efd!important; 
+    color: #ffffff;
   }
 
   .nav-link:hover{
@@ -139,24 +100,11 @@
     background-color: #b3e0ff;
   }
 
-  .nav-link.active:hover {
-    background-color: #0d6efd; /* Keep the active color on hover */
-  }
-
   .ml-auto {
     display: flex;               /* Enable flexbox */
     align-items: center;         /* Vertically center the content */
     justify-content: flex-end;   /* Align content to the right */
   }
-
-  .svg-rotate {
-  transition: transform 0.3s ease; /* Smooth rotation transition */
-}
-
-/* When the `rotate-180` class is applied, rotate the SVG 180 degrees */
-.rotate-180 {
-  transform: rotate(180deg);
-}
   </style>
   
   

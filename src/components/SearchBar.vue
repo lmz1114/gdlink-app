@@ -58,5 +58,10 @@
     outline: none;
     box-shadow: none;
   }
+
+  .bg-white{
+    --bs-bg-opacity: 0;
+    background-color: white;
+  }
   </style>
   
