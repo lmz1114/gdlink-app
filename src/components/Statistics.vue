@@ -16,10 +16,10 @@ export default {
   data() {
     return {
       uploads: {
-        Timetable: 3,
-        Research: 5,
-        CourseFiles: 4,
-        Others: 6
+        Timetable: 18,
+        Research: 4,
+        CourseFiles: 19,
+        Others: 20
       },
       totalUploads: 0,
       chart: null,
@@ -62,7 +62,7 @@ export default {
             },
             title: {
                 display: true, // Show the title
-                text: 'Total Uploads', // Title text
+                text: 'Total Shared With You', // Title text
                 position: 'top', // Title position: top, left, right, bottom
                 font: {
                     size: 30,
