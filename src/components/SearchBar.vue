@@ -40,9 +40,16 @@
   </script>
   
   <style scoped>
+  input{
+    border: 2px solid #D3D3D3;
+    border-right:none;
+  }
+
   .btn {
     background-color: #FCCF3A;
-    border: none;
+    border-top: 2px solid #D3D3D3;
+    border-right: 2px solid #D3D3D3;
+    border-bottom: 2px solid #D3D3D3;
     transition: background-color 0.3s; 
   }
   

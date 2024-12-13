@@ -6,6 +6,8 @@ import UploadForm from '../views/UploadForm.vue'
 import FavouritePage from '../views/FavouritePage.vue'
 import MyUploadsPage from '../views/MyUploadsPage.vue'
 import ShareWithMePage from '../views/ShareWithMePage.vue'
+import ProfilePage from '../views/ProfilePage.vue'
+
 
 const routes = [
   { path: '/', name: 'Home', component: HomePage },
@@ -13,7 +15,8 @@ const routes = [
   { path: '/resource_upload', name:'UploadForm', component: UploadForm},
   { path: '/favourites', name:'Favourites', component: FavouritePage},
   { path: '/my_uploads', name:'My Uploads', component: MyUploadsPage},
-  { path: '/shared_with_me', name:'Share with me', component: ShareWithMePage}
+  { path: '/shared_with_me', name:'Share with me', component: ShareWithMePage},
+  { path: '/profile', name:'Profile', component: ProfilePage}
 ]
 
 const router = createRouter({

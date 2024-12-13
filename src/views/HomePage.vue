@@ -1,18 +1,16 @@
 <template>
   <DefaultLayout>
     <template #default>
-      <SearchBar class="bg-white"/>
-      <section class="border rounded mt-0 shadow-sm bg-white" style="padding: 0.7em">
-        <h4 style="vertical-align: middle;">Welcome to the UTM Resource Center, 
+      <h2 class="ms-2 mb-4">Session {{ currentSession }} Semester {{ currentSemester }}</h2>
+      <div class="border rounded shadow-sm bg-white p-3">
+        <h4 class="align-middle">Welcome to UTM Resource Center, 
           <strong v-if="userSession">{{ userSession.full_name }}</strong>
         !!!</h4>
-      </section>
+      </div>
       <Statistics class="bg-white"/>
-      <div style="padding-bottom: 1em;">
-        <section  class="border rounded mt-4 shadow-sm bg-white"  style="padding: 1.5em;">
-        <h2 style="margin-bottom: 1em;">Recent Access</h2>
-        <displayResource class="flex-box" style="margin-top: 1em;" />
-      </section>
+      <div class="border rounded mt-4 shadow-sm bg-white p-4">
+        <h2 class="mb-2">Recent Access</h2>
+        <displayResource class="flex-box"/>
       </div>
     </template>
   </DefaultLayout>
@@ -20,7 +18,6 @@
   
   <script>
   import DefaultLayout from '../components/DefaultLayout.vue'; 
-  import SearchBar from '../components/SearchBar.vue';
   import Statistics from '../components/Statistics.vue';
   import displayResource from './displayResource.vue';
   
@@ -28,12 +25,13 @@
     data(){
       return {
         userSession: null,
-        role: 'academicoffice'
+        role: 'academicoffice',
+        currentSession: '2024/2025',
+        currentSemester: '1'
       }
     },
     components: {
       DefaultLayout,
-      SearchBar,
       Statistics,
       displayResource
     },
@@ -49,10 +47,6 @@
   </script>
   
   <style scoped>
-  .text-center {
-    text-align: center;
-  }
-
   .flex-box{
     display: flex;
     align-items:center;
