@@ -9,7 +9,8 @@
                       <h2><strong>Profile</strong></h2>
                 </div>
                 <div class="d-flex flex-column align-items-center justify-content-center">
-                    <img src="../assets/kwek.png" class="rounded-circle profile-image" alt="profile image" width="236" height="236"> 
+                    <img src="../assets/kwek.png" class="rounded-circle profile-image mb-3" alt="profile image" width="236" height="236"> 
+                    <a href="#">Edit Picture</a>
                     <hr>
                     <div>
                         <div class="d-flex">

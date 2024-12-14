@@ -20,10 +20,24 @@
 
       <div class="d-flex justify-content-center align-items-end vh-100">
         <div class="rounded d-flex flex-column justify-content-center align-items-center upload-effect shadow" style="background-color: #D36B6C; width: 150px; height: 100px;" @click="navUploadForm">
-          <svg width="25" height="36" viewBox="0 0 25 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14.5833 9.5625V0H1.5625C0.696615 0 0 0.752344 0 1.6875V34.3125C0 35.2477 0.696615 36 1.5625 36H23.4375C24.3034 36 25 35.2477 25 34.3125V11.25H16.1458C15.2865 11.25 14.5833 10.4906 14.5833 9.5625ZM18.8268 24.7507H14.5833V30.3757C14.5833 30.9973 14.1172 31.5007 13.5417 31.5007H11.4583C10.8828 31.5007 10.4167 30.9973 10.4167 30.3757V24.7507H6.17318C5.24349 24.7507 4.7793 23.535 5.43945 22.827L11.7168 16.098C12.1497 15.6333 12.849 15.6333 13.2819 16.098L19.5592 22.827C20.2201 23.535 19.7565 24.7507 18.8268 24.7507ZM24.5443 7.38281L18.1706 0.492188C17.8776 0.175781 17.4805 0 17.0638 0H16.6667V9H25V8.57109C25 8.12813 24.8372 7.69922 24.5443 7.38281Z" fill="white"/>
+          <svg width="40px" height="40px" viewBox="0 0 41 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g filter="url(#filter0_d_491_18)">
+            <path d="M29.9286 23.125C28.2633 23.125 26.7327 23.69 25.5244 24.635L17.9752 20.0061C18.1988 19.014 18.1988 17.9859 17.9752 16.9938L25.5244 12.3649C26.7327 13.31 28.2633 13.875 29.9286 13.875C33.834 13.875 37 10.769 37 6.9375C37 3.10605 33.834 0 29.9286 0C26.0232 0 22.8571 3.10605 22.8571 6.9375C22.8571 7.45478 22.9153 7.95861 23.0248 8.44359L15.4756 13.0725C14.2673 12.1275 12.7368 11.5625 11.0714 11.5625C7.16601 11.5625 4 14.6685 4 18.5C4 22.3315 7.16601 25.4375 11.0714 25.4375C12.7368 25.4375 14.2673 24.8725 15.4756 23.9275L23.0248 28.5564C22.9132 29.051 22.857 29.556 22.8571 30.0625C22.8571 33.894 26.0232 37 29.9286 37C33.834 37 37 33.894 37 30.0625C37 26.231 33.834 23.125 29.9286 23.125Z" fill="white"/>
+            </g>
+            <defs>
+            <filter id="filter0_d_491_18" x="0" y="0" width="41" height="45" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+            <feOffset dy="4"/>
+            <feGaussianBlur stdDeviation="2"/>
+            <feComposite in2="hardAlpha" operator="out"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_491_18"/>
+            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_491_18" result="shape"/>
+            </filter>
+            </defs>
           </svg>
-          <span class="mt-2" style="color:white;"><strong>Upload</strong></span>
+          <span class="mt-2" style="color:white;"><strong>Share Resource</strong></span>
         </div>
       </div>
 
@@ -54,17 +68,10 @@ import SideBarTab from './SideBarTab.vue';
     data() {
       const navItems = [
           { name: 'Home', link: '/', icon: 'home', },
-          { name: 'Favourites', link: '/favourites', icon: 'favourites' },
-          { name: 'My Uploads', link: '/my_uploads', icon: 'myuploads' },
+          { name: 'My ShareLinks', link: '/my_sharelinks', icon: 'mysharelinks' },
           { name: 'Shared With Me', link: '/shared_with_me', icon: 'sharewithme' },
-          { name: 'Category', link: '/category', icon: 'category', 
-            subItems: [
-              { name: 'Timetable', link: '#', isActive: false, icon: 'timetable' },
-              { name: 'Research', link: '#', isActive: false, icon: 'research' },
-              { name: 'Course Files', link: '#', isActive: false, icon: 'coursefiles' },
-              { name: 'Others', link: '#', isActive: false, icon: 'others' },
-            ],
-          },
+          { name: 'Favourites', link: '/favourites', icon: 'favourites' },
+          { name: 'Notification', link: '/notification', icon: 'notification' },
       ]
 
 

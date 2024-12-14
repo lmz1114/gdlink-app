@@ -7,10 +7,13 @@
           <strong v-if="userSession">{{ userSession.full_name }}</strong>
         !!!</h4>
       </div>
-      <Statistics class="bg-white"/>
+      <div class="d-flex justify-content-center gap-4">
+        <Statistics2 class="bg-white w-100"/>
+        <Statistics class="bg-white w-100"/>
+      </div>
       <div class="border rounded mt-4 shadow-sm bg-white p-4">
-        <h2 class="mb-2">Recent Access</h2>
-        <displayResource class="flex-box"/>
+        <h2 class="mb-4">Recent Access</h2>
+        <displayResource/>
       </div>
     </template>
   </DefaultLayout>
@@ -19,6 +22,7 @@
   <script>
   import DefaultLayout from '../components/DefaultLayout.vue'; 
   import Statistics from '../components/Statistics.vue';
+  import Statistics2 from '../components/Statistics2.vue';
   import displayResource from './displayResource.vue';
   
   export default {
@@ -33,6 +37,7 @@
     components: {
       DefaultLayout,
       Statistics,
+      Statistics2,
       displayResource
     },
     mounted() {
@@ -47,12 +52,6 @@
   </script>
   
   <style scoped>
-  .flex-box{
-    display: flex;
-    align-items:center;
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
 
   .bg-white{
     background-color: white;

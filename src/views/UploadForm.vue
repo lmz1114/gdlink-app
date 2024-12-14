@@ -2,7 +2,7 @@
     <DefaultLayout>
         <template #default>
             <section class="border rounded mt-0 shadow-sm bg-white" style="padding: 1.5em">
-      <h2 style="margin-bottom: 1em;"><strong>Resource Upload</strong></h2>
+      <h2 style="margin-bottom: 1em;"><strong>Resource Share</strong></h2>
       <form>
         <!-- Link Input -->
         <div class="mb-3">
@@ -91,7 +91,7 @@
         </div>
   
         <!-- Share To Dropdown -->
-        <div class="mb-1">
+        <div class="mb-3">
           <label for="shareTo" class="form-label">Share To:</label>
           <div class = "d-flex">
           <select
@@ -109,10 +109,11 @@
 
           <button v-if="resource.shareTo === 'specific'"
             type="button"
-            class="btn btn-outline-primary mb-2"
+            class="btn btn-outline-primary"
             @click="addEmailField"
+            style="width:120px;"
           >
-            Add Email
+            Add User ID
           </button>
         </div>
         </div>
@@ -123,7 +124,7 @@
               type="email"
               v-model="emailInputs[index]"
               class="form-control"
-              placeholder="Enter email"
+              placeholder="Enter User ID"
               required
             />
           </div>
