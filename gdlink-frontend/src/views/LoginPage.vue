@@ -49,13 +49,17 @@
 <style>
   @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
 </style>
+
   <script>
+  import axios from 'axios';
+
   export default {
     data() {
       return {
         userId: '',
         password: '',
         url: 'http://web.fc.utm.my/ttms/web_man_webservice_json.cgi?entity=authentication',
+        message: '',
         inputType: 'password',
         passIcon: 'bi-eye-slash',
         hide: true
@@ -74,23 +78,72 @@
           this.passIcon = 'bi-eye-slash';
         }
       },
-      login() {
-        console.log(`Try to login: ${this.userId}, ${this.password}`);
-        const loginURL = `${this.url}&login=${this.userId}&password=${this.password}`;
-        console.log(loginURL);
-  
-        fetch(loginURL)
-          .then((res) => res.json())
-          .then((jsonInst) => {
-            console.log(jsonInst[0].session_id);
-            console.log(JSON.stringify(jsonInst[0]));
-  
-            // Save session to sessionStorage
-            sessionStorage.setItem('utmwebfc_session', JSON.stringify(jsonInst[0]));
-            this.$router.push('/');
-          })
-          .catch((err) => console.log(err));
+      async login(){
+        try {
+          const response = await axios.post('http://localhost:8081/login/db_check',{
+            user_id: this.userId,
+            password: this.password
+          });
+          const { login_type, message, user } = response.data;
+          if ( login_type === 0) {
+              console.log(message);
+              sessionStorage.setItem('utmwebfc_session', JSON.stringify(user));
+              this.$router.push('/'); 
+          } else if(login_type){
+            const data = await this.loginByDefaultPass();
+            if(data.user){
+              switch(login_type){
+                case 1: this.first_time_login(data.user); break;
+
+                case 2: this.existing_login(user); break;
+              }
+            } 
+          }
+        } catch (error) {
+          alert('Error fetching data:', error);
+        }
       },
+
+      async loginByDefaultPass(){
+        try {
+          const response = await axios.post('http://localhost:8081/login/default_login', {
+            userId: this.userId,
+            password: this.password,
+          });
+
+          return response.data;
+
+        } catch (err) {
+          console.error('Error during login:', err);
+          return null;
+        }
+      },
+
+      async first_time_login(instance){
+        try {
+          const response = await axios.post('http://localhost:8081/login/first_time_login', {
+            user_id: instance.login_name,
+            username: instance.full_name,
+            email: instance.email,
+            role: instance.description
+          });
+
+          const { message, user } = response.data;
+          console.log(message);
+          if(response.status === 201){
+            sessionStorage.setItem('utmwebfc_session', JSON.stringify(user));
+            this.$router.push('/'); 
+          }
+        } catch (error) {
+            this.message = 'Error occur.';
+            console.error(error);
+        }
+      },
+
+      async existing_login(user){
+        sessionStorage.setItem('utmwebfc_session', JSON.stringify(user));
+        this.$router.push('/'); 
+      }
     },
   };
   </script>

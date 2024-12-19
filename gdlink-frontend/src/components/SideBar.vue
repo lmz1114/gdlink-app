@@ -45,11 +45,9 @@
       <div class="dropdown">
         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
           <img src="../assets/kwek.png" alt="" width="32" height="32" class="rounded-circle me-2">
-          <strong v-if="userSession">{{ userSession.full_name }}</strong>
+          <strong v-if="userSession">{{ userSession.name }}</strong>
         </a>
         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
-          <li><a class="dropdown-item" href="#">New project...</a></li>
-          <li><a class="dropdown-item" href="#">Settings</a></li>
           <li><a class="dropdown-item" href="/profile">Profile</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item" @click="logout">Sign out</a></li>
@@ -110,24 +108,25 @@ import SideBarTab from './SideBarTab.vue';
   
   <style scoped>
   .upload-effect {
-  transition: transform 0.3s, background-color 0.3s;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s;
 }
 
   .upload-effect:hover {
-    transform: scale(1.1); /* Slightly enlarge */
-    background-color: #b85859; /* Change background color on hover */
+    transform: scale(1.1); 
+    background-color: #b85859; 
   }
 
   .upload-effect:active {
-    transform: scale(0.95); /* Slightly shrink when pressed */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add a pressed shadow effect */
-    background-color: #a14a4b; /* Darken background color */
+    transform: scale(0.95); 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+    background-color: #a14a4b; 
   }
 
   .bottom-div {
     position: absolute;
-    bottom: 0; /* Keeps the div at the bottom of the sidebar */
-    width: 100%; /* Make sure it spans the width of the sidebar */
+    bottom: 0; 
+    width: 100%; 
   }
   </style>
   

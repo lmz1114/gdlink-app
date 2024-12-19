@@ -4,7 +4,7 @@
       <h2 class="ms-2 mb-4">Session {{ currentSession }} Semester {{ currentSemester }}</h2>
       <div class="border rounded shadow-sm bg-white p-3">
         <h4 class="align-middle">Welcome to UTM Resource Center, 
-          <strong v-if="userSession">{{ userSession.full_name }}</strong>
+          <strong v-if="userSession">{{ userSession.name }}</strong>
         !!!</h4>
       </div>
       <div class="d-flex justify-content-center gap-4">

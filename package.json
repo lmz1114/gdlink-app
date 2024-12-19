@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "frontend": "cd gdlink-frontend && npm run serve",
+    "backend": "cd gdlink-backend && npm start",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1"
+  }
+}
