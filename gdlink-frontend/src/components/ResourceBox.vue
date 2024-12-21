@@ -9,7 +9,7 @@
       </div>
       <hr>
       <div class="card-body" style="width: 180px;">
-        <h5 class="card-title"><strong>{{title}}</strong></h5>
+        <h5 class="card-title"><strong>{{ ref_name }}</strong></h5>
         <p class="card-text">{{ description }}</p>
       </div>
     </div>
@@ -19,14 +19,18 @@
   export default {
     name: "ResourceBox",
     props: {
-      svgColor: { type: String, default: "#000" }, 
-      title: { type: String, required: true },
-      description: { type: String, required: true },
+      category: { type: String, required: true }, 
+      ref_name: { type: String, required: true },
+      description: { type: String, required: false },
     },
     data() {
       return {
+        svgColor: null,
         transform: 'perspective(500px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
       };
+    },
+    created(){
+      this.svgColor = this.determineColor();
     },
     computed: {
       itemStyle() {
@@ -37,6 +41,14 @@
       },
     },
     methods: {
+      determineColor(){
+        switch(this.category){
+          case "Course Files": return "green";
+          case "Meeting":  return "red";
+          case "Workshop": return "blue";
+          default: return "grey";
+        }
+      },
       handleMouseMove(event) {
         const rect = event.currentTarget.getBoundingClientRect();
         const itemCenterX = rect.left + rect.width / 2;

@@ -9,7 +9,12 @@
                     <h2><strong>My ShareLinks</strong></h2>
                 </div>
                 <SearchBar></SearchBar>
-                <FilterField class="float-start"/>
+                <FilterField 
+                    @filtercategory="updateCategory"
+                    @filtersemester="updateSemester"
+                    class="float-start w-100 mb-5"
+                />
+                <MyShareLinkResources />
             </section>
         </template>
     </DefaultLayout>
@@ -19,13 +24,33 @@
 import FilterField from '../components/FilterField.vue';
 import DefaultLayout from '../components/DefaultLayout.vue';
 import SearchBar from '../components/SearchBar.vue';
+import MyShareLinkResources from '../components/MyShareLinkResources.vue';
 
 
 export default {
+    data() {
+      return {
+        selectedCategories: [],
+        selectedSemesters: []
+      };
+    },
     components: {
       FilterField,
       SearchBar,
-      DefaultLayout
+      DefaultLayout,
+      MyShareLinkResources
     },
+    methods:{
+        updateCategory(categories) {
+            console.log(categories);
+            this.selectedCategories = categories;
+            console.log(this.selectedCategories);
+        },
+        updateSemester(semesters) {
+            console.log(semesters);
+            this.selectedSemesters = semesters;
+            console.log(this.selectedSemesters);
+        }
+    }
 };
 </script>

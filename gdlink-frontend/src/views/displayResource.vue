@@ -23,21 +23,6 @@
       return {
         boxes: [
           {
-            color: 'red', // Red
-            title: 'Timetable',
-            description: "Undergraduate Timetable 2024/2025-1",
-          },
-          {
-            color: "green", // Green
-            title: 'UTMFR',
-            description: "UTMFR Slides",
-          },
-          {
-            color: "blue", // Blue
-            title: 'SECJ2013-03',
-            description: "Course files submission for DSA Course Section 03",
-          },
-          {
             color: "blue", // Blue
             title: 'SECJ2013-09',
             description: "Course files submission for DSA Course Section 09",

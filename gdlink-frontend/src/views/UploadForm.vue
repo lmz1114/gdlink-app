@@ -3,7 +3,7 @@
         <template #default>
             <section class="border rounded mt-0 shadow-sm bg-white" style="padding: 1.5em">
       <h2 style="margin-bottom: 1em;"><strong>Resource Share</strong></h2>
-      <form>
+      <form @submit.prevent="submitForm">
         <!-- Link Input -->
         <div class="mb-3">
           <label for="link" class="form-label">Link:</label>
@@ -13,6 +13,19 @@
             v-model="resource.link"
             class="form-control"
             placeholder="Enter the link"
+            required
+          />
+        </div>
+
+        <!-- Owner -->
+        <div class="mb-3">
+          <label for="owner" class="form-label">Owner:</label>
+          <input
+            type="text"
+            id="owner"
+            v-model="resource.owner"
+            class="form-control"
+            placeholder="Enter the owner"
             required
           />
         </div>
@@ -28,8 +41,8 @@
           >
             <option value="" disabled>Select Category</option>
             <option value="Course Files">Course Files</option>
-            <option value="Assignments">Assignments</option>
-            <option value="Lectures">Lectures</option>
+            <option value="Meeting">Meeting</option>
+            <option value="Workshop">Workshop</option>
           </select>
         </div>
   
@@ -110,7 +123,7 @@
           <button v-if="resource.shareTo === 'specific'"
             type="button"
             class="btn btn-outline-primary"
-            @click="addEmailField"
+            @click="addReceiverField"
             style="width:120px;"
           >
             Add User ID
@@ -119,13 +132,12 @@
         </div>
 
         <div v-if="resource.shareTo === 'specific'" class="mb-3">
-          <div v-for="(email, index) in emailInputs" :key="index" class="input-group mb-2">
+          <div v-for="(email, index) in resource.receiver" :key="index" class="input-group mb-2">
             <input
               type="email"
-              v-model="emailInputs[index]"
+              v-model="resource.receiver[index]"
               class="form-control"
               placeholder="Enter User ID"
-              required
             />
           </div>
         </div>
@@ -148,7 +160,7 @@
   
   <script>
   import DefaultLayout from '../components/DefaultLayout.vue'; 
-
+  import ResourcesSharingService from '../service/ResourcesSharingService';
 
   export default {
     components: {
@@ -156,17 +168,26 @@
     },
     data() {
       return {
+        userId: null,
         resource: {
           link: "",
           category: "",
+          owner: "",
           refName: "",
           description: "",
           session: "",
           semester: "",
           shareTo: "",
+          receiver: [""]
         },
-        emailInputs: [""], // Dynamic email inputs array
       };
+    },
+    created() {
+      const sessionData = sessionStorage.getItem('utmwebfc_session');
+      if (sessionData) {
+        const userSession = JSON.parse(sessionData);
+        this.userId = userSession.user_id;
+      }
     },
     methods: {
       cancelUpload() {
@@ -179,29 +200,28 @@
           session: "",
           semester: "",
           shareTo: "",
+          receiver: [""]
         };
-        this.emailInputs=[""];
         this.$router.push('/');
       },
       handleShareChange() {
       if (this.resource.shareTo !== "specific") {
         // Clear all email fields when switching from "Specific"
-        this.emailInputs = [""];
+        this.resource.receiver = [""];
       }
     },
-      addEmailField() {
+      addReceiverField() {
       // Add a new empty email input field
-        this.emailInputs.push("");
+        this.resource.receiver.push("");
       },
-      submitForm() {
-      // Collect all data and submit the form
-      const formData = {
-        ...this.resource,
-        emails: this.emailInputs.filter((email) => email.trim() !== ""), // Filter non-empty emails
-      };
-      console.log("Submitted Form Data:", formData);
-      alert("Form submitted successfully!");
-    },
+      submitForm() {      
+        if(this.resource.receiver){
+          this.resource.receiver.filter((email) => email.trim() !== "");
+        }
+        const response = ResourcesSharingService.shareResource(this.userId,this.resource);
+        console.log(response);
+        this.cancelUpload();
+      },
     },
   };
   </script>

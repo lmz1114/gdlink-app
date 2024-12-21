@@ -42,7 +42,7 @@
       return {
         selectedCategory: [],
         selectedSemester: [],
-        categories: ["Timetable", "Research", "Course Files", "Others"], // Example categories
+        categories: ["Course Files", "Meeting", "Workshop", "Others"], // Example categories
         semesters: ["2022/2023-1", "2022/2023-2", "2023/2024-1", "2023/2024-2","2024/2025-1"],   // Example semesters
       };
     },
@@ -64,7 +64,8 @@
           check.classList.add("checked");
           selectedItem.push(item);
         }
-        console.log(selectedItem);
+        const filterWord = `filter${word}`;
+        this.$emit(filterWord, selectedItem);
       }
     },
   };
@@ -98,6 +99,7 @@
 
   .list-items{
     position: absolute;
+    z-index: 999;
     margin-top: -2px;
     border-radius: 8px;
     padding: 14px 0px;
