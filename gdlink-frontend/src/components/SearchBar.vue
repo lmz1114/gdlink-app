@@ -3,9 +3,10 @@
       <input 
         type="text" 
         class="form-control" 
-        v-model="query" 
+        v-model="key" 
         @keydown.enter="onSearch" 
         placeholder="Search"
+        @input="handleInput"
       />
       <button 
         class="btn d-flex align-items-center justify-content-center" 
@@ -23,13 +24,22 @@
   export default {
     data() {
       return {
-        query: '', // Holds the search query
+        key: '', // Holds the search query
         isPressed: false, // Track if Enter key was pressed
       };
     },
     methods: {
+      handleInput() {
+        // Emit event when input is cleared
+        if (this.key.trim() === '') {
+          this.$emit('search', ''); // Emit empty search event
+          console.log('Search input cleared');
+        } else {
+          console.log(`Searching for: ${this.key}`);
+        }
+      },
       onSearch() {
-        this.$emit('search', this.query); // Emit search query to parent
+        this.$emit('search', this.key); // Emit search query to parent
         this.isPressed = true; // Set the flag to true when Enter is pressed
         setTimeout(() => {
           this.isPressed = false; // Reset after 300ms (time for the visual change)

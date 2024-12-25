@@ -4,21 +4,20 @@
             <section class="border rounded shadow-sm bg-white vh-100 w-100 p-4">
                 <div class="d-flex mb-4">
                     <svg class="me-3" width="2.5em" height="2.5em" viewBox="0 0 25 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M24.8565 9.89987L21.7131 15.2885C21.4685 15.7079 21.1182 16.0558 20.6972 16.2976C20.2763 16.5394 19.7992 16.6667 19.3138 16.6667H1.95421C1.15026 16.6667 0.649349 15.7946 1.05443 15.1001L4.19783 9.71146C4.44246 9.2921 4.79272 8.94418 5.21372 8.70238C5.63471 8.46057 6.11173 8.33333 6.59722 8.33333H23.9568C24.7607 8.33333 25.2616 9.20542 24.8565 9.89987ZM6.59722 6.94444H20.8333V4.86111C20.8333 3.7105 19.9006 2.77778 18.75 2.77778H11.8056L9.02778 0H2.08333C0.932726 0 0 0.932726 0 2.08333V14.1513L2.99813 9.01163C3.74193 7.73654 5.12105 6.94444 6.59722 6.94444Z" fill="#74B5EE"/>
+                        <path d="M7.5 8.75C9.91797 8.75 11.875 6.79297 11.875 4.375C11.875 1.95703 9.91797 0 7.5 0C5.08203 0 3.125 1.95703 3.125 4.375C3.125 6.79297 5.08203 8.75 7.5 8.75ZM10.5 10H10.1758C9.36328 10.3906 8.46094 10.625 7.5 10.625C6.53906 10.625 5.64062 10.3906 4.82422 10H4.5C2.01562 10 0 12.0156 0 14.5V15.625C0 16.6602 0.839844 17.5 1.875 17.5H13.125C14.1602 17.5 15 16.6602 15 15.625V14.5C15 12.0156 12.9844 10 10.5 10ZM18.75 8.75C20.8203 8.75 22.5 7.07031 22.5 5C22.5 2.92969 20.8203 1.25 18.75 1.25C16.6797 1.25 15 2.92969 15 5C15 7.07031 16.6797 8.75 18.75 8.75ZM20.625 10H20.4766C19.9336 10.1875 19.3594 10.3125 18.75 10.3125C18.1406 10.3125 17.5664 10.1875 17.0234 10H16.875C16.0781 10 15.3438 10.2305 14.6992 10.6016C15.6523 11.6289 16.25 12.9922 16.25 14.5V16C16.25 16.0859 16.2305 16.168 16.2266 16.25H23.125C24.1602 16.25 25 15.4102 25 14.375C25 11.957 23.043 10 20.625 10Z" fill="#E074EE"/>
                     </svg>
-                    <h2><strong>My ShareLinks</strong></h2>
+                    <h2><strong>Shared With Me</strong></h2>      
                 </div>
                 <SearchBar
                     @search = "search"
                 />
-               
                 <FilterField 
                     @filtercategory="updateCategory"
                     @filtersemester="updateSemester"
                     class="float-start w-100 mb-5"
                 />
-                <MyShareLinkResources
-                    :resources="myResources"
+                <SharedWithMeResources
+                    :resources="sharedWithMeResources"
                 />
             </section>
         </template>
@@ -29,7 +28,7 @@
 import FilterField from '../components/FilterField.vue';
 import DefaultLayout from '../components/DefaultLayout.vue';
 import SearchBar from '../components/SearchBar.vue';
-import MyShareLinkResources from '../components/ResourceList.vue';
+import SharedWithMeResources from '../components/ResourceList.vue';
 import ResourcesSharingService from '../service/ResourcesSharingService';
 
 
@@ -37,7 +36,7 @@ export default {
     data() {
       return {
         userId: null,
-        myResources: [],
+        sharedWithMeResources: [],
         selectedCategories: null,
         selectedSemesters: null,
         key: null
@@ -47,7 +46,7 @@ export default {
       FilterField,
       SearchBar,
       DefaultLayout,
-      MyShareLinkResources
+      SharedWithMeResources
     },
     created() {
         const sessionData = sessionStorage.getItem('utmwebfc_session');
@@ -55,18 +54,17 @@ export default {
             const userSession = JSON.parse(sessionData);
             this.userId = userSession.user_id;
         }
-        this.displayMyShareLinksResources();
+        this.displaySharedWithMeResources();
     },
     methods:{
-        async displayMyShareLinksResources() {
-            this.myResources = await ResourcesSharingService.getMyShareLinksResources(this.userId);
+        async displaySharedWithMeResources() {
+            this.sharedWithMeResources = await ResourcesSharingService.getSharedWithMeResources(this.userId);
         },
         async displayFilteredResources() {
-            this.myResources = await ResourcesSharingService.getFilteredMyShareLinksResources(this.userId,this.selectedCategories,this.selectedSemesters);
-            console.log(this.myResources);
+            this.sharedWithMeResources = await ResourcesSharingService.getFilteredSharedWithMeResources(this.userId,this.selectedCategories,this.selectedSemesters);
         },
         async displaySearchedResources() {
-            this.myResources = await ResourcesSharingService.getSearchedMyShareLinksResources(this.userId,this.key);
+            this.sharedWithMeResources = await ResourcesSharingService.getSearchedSharedWithMeResources(this.userId,this.key);
             console.log(this.myResources);
         },
         updateCategory(categories) {
@@ -86,7 +84,7 @@ export default {
                 this.displaySearchedResources();
             }
             else{
-                this.displayMyShareLinksResources();
+                this.displaySharedWithMeResources();
             }
         }
     }

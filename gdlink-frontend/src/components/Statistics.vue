@@ -1,51 +1,72 @@
 <template>
     <section class="border mt-4 p-3 rounded shadow-sm">
         <div class="position-relative d-flex justify-content-center align-items-center" style="min-height: 30vh;">
-            <canvas id="uploadChart"></canvas>
+            <canvas id="sharedWithMeChart"></canvas>
         </div>
     </section>
 </template>
 
 <script>
 import { Chart, DoughnutController, ArcElement, Tooltip, Legend, Title } from "chart.js";
-// Register necessary components
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend, Title);
 
 export default {
-  name: "UploadChart",
+  name: "SharedWithMeChart",
+  props: {
+    resources: {
+      type: Array,
+      required: true,
+    },
+    chartTitle: {
+      type: String,
+      default: "Total Shared With You",
+    },
+  },
   data() {
     return {
-      uploads: {
-        Timetable: 18,
-        Research: 4,
-        CourseFiles: 19,
-        Others: 20
-      },
-      totalUploads: 0,
       chart: null,
     };
   },
+  computed: {
+    totalUploads() {
+      return this.resources.reduce((sum, resource) => sum + resource.count, 0);
+    },
+    chartData() {
+      return {
+        labels: this.resources.map((resource) => resource.category_name),
+        counts: this.resources.map((resource) => resource.count),
+        colors: this.resources.map((resource) => resource.category_color),
+      };
+    },
+  },
   mounted() {
-    this.totalUploads = Object.values(this.uploads).reduce((a, b) => a + b, 0);
-
     this.createChart();
+  },
+  watch: {
+    resources: {
+      deep: true,
+      handler() {
+        if (this.chart) {
+          this.updateChart();
+        }
+      },
+    },
   },
   methods: {
     createChart() {
-      const ctx = document.getElementById("uploadChart").getContext("2d");
+      const ctx = document.getElementById("sharedWithMeChart").getContext("2d");
  
       this.chart = new Chart(ctx, {
-        type: "doughnut", // Set the type of chart
+        type: "doughnut", 
         data: {
-          labels: Object.keys(this.uploads),
+          labels: this.chartData.labels,
           datasets: [
             {
-              data: Object.values(this.uploads),
-              backgroundColor: ["#4A18FF", "#67E613", "#FAB74C","#585656"],
-              hoverBackgroundColor: ["#4A18FF", "#67E613", "#FAB74C","#585656"],
+              data: this.chartData.counts,
+              backgroundColor: this.chartData.colors,
+              hoverBackgroundColor: this.chartData.colors,
             },
           ],
-          totalUploads: this.totalUploads
         },
         options: {
           responsive: true,
@@ -91,13 +112,18 @@ export default {
           ctx.fillStyle = "#000";  // Set the text color
 
           // Add the totalUploads value in the center of the chart
-          const totalUploads = chart.config.data.totalUploads;
-          ctx.fillText(totalUploads, x, y);
+          ctx.fillText(this.totalUploads, x, y);
         }
       };
 
-      // Register the plugin globally
       Chart.register(plugin);
+    },
+    updateChart() {
+      this.chart.data.labels = this.chartData.labels;
+      this.chart.data.datasets[0].data = this.chartData.counts;
+      this.chart.data.datasets[0].backgroundColor = this.chartData.colors;
+      this.chart.data.datasets[0].hoverBackgroundColor = this.chartData.colors;
+      this.chart.update();
     },
   },
 };

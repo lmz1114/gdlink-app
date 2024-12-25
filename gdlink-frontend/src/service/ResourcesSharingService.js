@@ -15,9 +15,64 @@ const ResourcesSharingService = {
         }
     },
 
-    async getMySharedResources(user_id){
+    async getMyShareLinksResources(user_id){
         try {
             const response = await axios.get(`${API_BASE_URL}/my_sharelink/${user_id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
+    },
+
+    async getSharedWithMeResources(user_id){
+        try {
+            const response = await axios.get(`${API_BASE_URL}/shared_with_me/${user_id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
+    },
+
+    async getFilteredMyShareLinksResources(user_id,selectedCategories,selectedSemesters){
+        try {
+            const response = await axios.post(`${API_BASE_URL}/my_sharelink/${user_id}/filter`,{
+                categories: selectedCategories,
+                semesters: selectedSemesters,
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
+    },
+
+    async getFilteredSharedWithMeResources(user_id,selectedCategories,selectedSemesters){
+        try {
+            const response = await axios.post(`${API_BASE_URL}/shared_with_me/${user_id}/filter`,{
+                categories: selectedCategories,
+                semesters: selectedSemesters,
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
+    },
+
+    async getSearchedMyShareLinksResources(user_id,key){
+        try {
+            const response = await axios.post(`${API_BASE_URL}/my_sharelink/${user_id}/search`,{
+                key: key
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
+    },
+
+    async getSearchedSharedWithMeResources(user_id,key){
+        try {
+            const response = await axios.post(`${API_BASE_URL}/shared_with_me/${user_id}/search`,{
+                key: key
+            });
             return response.data;
         } catch (error) {
             console.error('Error fetching resources:', error);

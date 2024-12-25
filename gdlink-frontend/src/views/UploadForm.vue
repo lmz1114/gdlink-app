@@ -35,14 +35,14 @@
           <label for="category" class="form-label">Category:</label>
           <select
             id="category"
-            v-model="resource.category"
+            v-model="resource.category_id"
             class="form-select"
             required
           >
             <option value="" disabled>Select Category</option>
-            <option value="Course Files">Course Files</option>
-            <option value="Meeting">Meeting</option>
-            <option value="Workshop">Workshop</option>
+            <option v-for="category in categories" :key="category.category_id" :value="category.category_id">
+              {{ category.category_name }}
+            </option>
           </select>
         </div>
   
@@ -161,6 +161,7 @@
   <script>
   import DefaultLayout from '../components/DefaultLayout.vue'; 
   import ResourcesSharingService from '../service/ResourcesSharingService';
+  import CategoryService from '../service/CategoryService';
 
   export default {
     components: {
@@ -171,7 +172,7 @@
         userId: null,
         resource: {
           link: "",
-          category: "",
+          category_id: "",
           owner: "",
           refName: "",
           description: "",
@@ -180,6 +181,7 @@
           shareTo: "",
           receiver: [""]
         },
+        categories: [],
       };
     },
     created() {
@@ -188,13 +190,17 @@
         const userSession = JSON.parse(sessionData);
         this.userId = userSession.user_id;
       }
+      this.displayCategoryList();
     },
     methods: {
+      async displayCategoryList(){
+        this.categories = await CategoryService.getCategoryList();
+      },
       cancelUpload() {
         // Clear all input fields
         this.resource = {
           link: "",
-          category: "",
+          category_id: "",
           refName: "",
           description: "",
           session: "",

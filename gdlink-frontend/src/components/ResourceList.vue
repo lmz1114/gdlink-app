@@ -4,7 +4,7 @@
         <div style="width: 180px;" v-for="(resource, index) in resources" :key="index"> 
           <ResourceBox 
           @click="viewDetails(`${resource.resource_id}`)"
-            :category="resource.category"
+            :category_color="resource.color"
             :ref_name="resource.ref_name"
             :description="resource.description"
           />
@@ -15,33 +15,18 @@
   
   <script>
   import ResourceBox from "../components/ResourceBox.vue";
-  import ResourcesSharingService from "../service/ResourcesSharingService";
   
   export default {
     components: {
       ResourceBox,
     },
-    data() {
-      return {
-        userId: null,
-        resources: [],
-        selectedCategories: [],
-        selectedSemesters: []
-      };
-    },
-    created(){
-      const sessionData = sessionStorage.getItem('utmwebfc_session');
-      if (sessionData) {
-        const userSession = JSON.parse(sessionData);
-        this.userId = userSession.user_id;
-      }
-      this.displayMyShareLinkResources();
+    props: {
+      resources: {
+        type: Array,
+        required: true,
+      },
     },
     methods:{
-      async displayMyShareLinkResources(){
-        this.resources = await ResourcesSharingService.getMySharedResources(this.userId);
-        console.log(this.resources);
-      },
       async viewDetails(id){
         console.log(id);
         this.$router.push({ name: 'Resource Details', params: { resource_id: id } });

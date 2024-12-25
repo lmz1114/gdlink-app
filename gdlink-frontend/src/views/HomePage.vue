@@ -11,9 +11,8 @@
         <Statistics2 class="bg-white w-100"/>
         <Statistics class="bg-white w-100"/>
       </div>
-      <div class="border rounded mt-4 shadow-sm bg-white p-4">
+      <div class="recent border rounded mt-4 shadow-sm bg-white p-4">
         <h2 class="mb-4">Recent Access</h2>
-        <displayResource/>
       </div>
     </template>
   </DefaultLayout>
@@ -23,7 +22,6 @@
   import DefaultLayout from '../components/DefaultLayout.vue'; 
   import Statistics from '../components/Statistics.vue';
   import Statistics2 from '../components/Statistics2.vue';
-  import displayResource from './displayResource.vue';
   
   export default {
     data(){
@@ -38,7 +36,6 @@
       DefaultLayout,
       Statistics,
       Statistics2,
-      displayResource
     },
     mounted() {
       // Load session data when the component is mounted
@@ -55,6 +52,10 @@
 
   .bg-white{
     background-color: white;
+  }
+
+  .recent{
+    min-height: 500px;
   }
   </style>
   

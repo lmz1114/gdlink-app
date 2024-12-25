@@ -35,9 +35,9 @@ const ResourceSharingService = {
         }
     },   
     
-    async getMySharedResources(sharer_id){
+    async getMyShareLinksResources(sharer_id){
         try{
-            return await ResourcesSharingDAO.getMySharedResources(sharer_id);
+            return await ResourcesSharingDAO.getMyShareLinksResources(sharer_id);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -48,9 +48,48 @@ const ResourceSharingService = {
         }
     },
 
-    async getResourceDetails(resource_id){
+    async getSharedWithMeResources(receiver_id){
         try{
-            return await ResourcesSharingDAO.getResourceDetails(resource_id);
+            return await ResourcesSharingDAO.getSharedWithMeResources(receiver_id);
+        } catch (error) {
+            console.error('Service Error:', error);
+    
+            return {
+                error: true,
+                message: 'An error occurred while retrieving the resources. Please try again later.'
+            };
+        }
+    },
+
+    async getFilteredResources(user_id,user_id_type,categories,semesters){
+        try{
+            return await ResourcesSharingDAO.getFilteredResources(user_id,user_id_type,categories,semesters);
+        } catch (error) {
+            console.error('Service Error:', error);
+    
+            return {
+                error: true,
+                message: 'An error occurred while retrieving the resources. Please try again later.'
+            };
+        }
+    },
+
+    async getSearchedResources(user_id,user_id_type,key){
+        try{
+            return await ResourcesSharingDAO.getSearchedResources(user_id,user_id_type,key);
+        } catch (error) {
+            console.error('Service Error:', error);
+    
+            return {
+                error: true,
+                message: 'An error occurred while retrieving the resources. Please try again later.'
+            };
+        }
+    },
+
+    async getResourceDetails(resource_id,receiver_id = null){
+        try{
+            return await ResourcesSharingDAO.getResourceDetails(resource_id, receiver_id);
         } catch (error) {
             console.error('Service Error:', error);
     

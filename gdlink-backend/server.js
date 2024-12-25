@@ -10,6 +10,9 @@ app.use(cors()); // Allows all domains to access the backend
 const loginRouter = require('./router/login');
 const profileRouter = require('./router/profile');
 const ResourcesSharingRouter = require('./router/ResourcesSharingRouter');
+const CategoryRouter = require('./router/CategoryRouter');
+const HomeRouter = require('./router/HomeRouter');
+
 // Middleware to parse JSON request bodies
 app.use(express.json()); 
 
@@ -17,6 +20,9 @@ app.use(express.json());
 app.use('/login', loginRouter);
 app.use('/profile', profileRouter);
 app.use('/resources', ResourcesSharingRouter);
+app.use('/categories', CategoryRouter);
+app.use('/home', HomeRouter);
+
 
 // 404 Fallback
 app.use((req, res) => {
