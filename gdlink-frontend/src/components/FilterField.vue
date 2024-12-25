@@ -42,8 +42,8 @@
       return {
         selectedCategory: [],
         selectedSemester: [],
-        categories: ["Course Files", "Meeting", "Workshop", "Others"], // Example categories
-        semesters: ["2022/2023-1", "2022/2023-2", "2023/2024-1", "2023/2024-2","2024/2025-1"],   // Example semesters
+        categories: ["Course Files", "Meeting", "Workshop", "Others"], 
+        semesters: ["2022/2023-1", "2022/2023-2", "2023/2024-1", "2023/2024-2","2024/2025-1"],   
       };
     },
 

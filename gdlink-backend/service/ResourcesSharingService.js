@@ -89,10 +89,10 @@ const ResourceSharingService = {
 
     async getResourceDetails(resource_id,receiver_id = null){
         try{
+            await ResourcesSharingDAO.updateAccessTime(resource_id, receiver_id);
             return await ResourcesSharingDAO.getResourceDetails(resource_id, receiver_id);
         } catch (error) {
             console.error('Service Error:', error);
-    
             return {
                 error: true,
                 message: 'An error occurred while retrieving the resources. Please try again later.'
@@ -100,5 +100,7 @@ const ResourceSharingService = {
         }
     }
 }
+
+
 
 module.exports = ResourceSharingService;

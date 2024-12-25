@@ -23,12 +23,12 @@
                             <span>{{ resource.category_name }}</span>
                             <p>Session/Semester: </p>
                             <span>{{ resource.sessem }}</span>
-                            <p>Uploaded by: </p>
-                            <span>{{ resource.name }}</span>
-                            <p>Upload Date: </p> 
+                            <p v-if="view === 'receive'">Shared by: </p>
+                            <span v-if="view === 'receive'">{{ resource.sharer_name }}</span>
+                            <p>Shared Date: </p> 
                             <span>{{ resource.shared_at }}</span>
-                            <p>Owner: </p> 
-                            <span>{{ resource.owner }}</span>
+                            <p v-if="view === 'share'">Owner: </p> 
+                            <span v-if="view === 'share'">{{ resource.owner }}</span>
                             <p>Link: </p> 
                             <span>{{ resource.link }}</span>
                     </div>
@@ -47,6 +47,9 @@ import ResourcesSharingService from '../service/ResourcesSharingService';
 export default {
     data(){
         return{
+            userId: null,
+            resource_id: null,
+            view: null,
             resource: null
         }
     },
@@ -55,15 +58,25 @@ export default {
       ResourceBox
     },
     mounted(){
+        this.resource_id = this.$route.params.resource_id;
+        this.view = this.$route.meta.view;
+        const sessionData = sessionStorage.getItem('utmwebfc_session');
+        if (sessionData) {
+            const userSession = JSON.parse(sessionData);
+            this.userId = userSession.user_id;
+        }
         this.displayResourceDetails();
     },
     methods:{
         async displayResourceDetails(){
-            const id = this.$route.params.resource_id;
-            console.log(id);
-            const resource = await ResourcesSharingService.getResourceDetails(id);
+            let resource;
+            if(this.view === 'share'){
+                resource = await ResourcesSharingService.getMyShareLinksResourceDetails(this.resource_id);
+            }
+            else{
+                resource = await ResourcesSharingService.getSharedWithMeResourceDetails(this.resource_id,this.userId);
+            }
             this.resource = resource[0];
-            console.log(this.resource);
         }
     }
 };

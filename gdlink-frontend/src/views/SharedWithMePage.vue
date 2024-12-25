@@ -18,6 +18,7 @@
                 />
                 <SharedWithMeResources
                     :resources="sharedWithMeResources"
+                    @viewDetails = "viewDetails"
                 />
             </section>
         </template>
@@ -65,7 +66,6 @@ export default {
         },
         async displaySearchedResources() {
             this.sharedWithMeResources = await ResourcesSharingService.getSearchedSharedWithMeResources(this.userId,this.key);
-            console.log(this.myResources);
         },
         updateCategory(categories) {
             this.selectedCategories = categories;
@@ -86,6 +86,9 @@ export default {
             else{
                 this.displaySharedWithMeResources();
             }
+        },
+        viewDetails(id){
+            this.$router.push({ name: 'Shared With Me Resource Details', params: { resource_id: id } });
         }
     }
 };

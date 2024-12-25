@@ -63,6 +63,46 @@ const ResourceSharingDAO = {
             conn.release(); 
         }
     },
+
+    async getRecentAccessResources(user_id){
+        const conn = await getConnection();
+        try {
+               const query = `SELECT sharing.latest_access_time, 
+                                    resources.resource_id, 
+                                    category.color, 
+                                    resources.description, 
+                                    resources.ref_name, 
+                                    'receive' AS resource_type
+                                FROM sharing
+                                INNER JOIN resources ON resources.resource_id = sharing.resource_id
+                                INNER JOIN category ON resources.category_id = category.category_id
+                                WHERE receiver_id = ? 
+                                AND sharing.latest_access_time >= CURDATE() - INTERVAL 7 DAY
+                                UNION 
+                                SELECT resources.latest_access_time, 
+                                    resources.resource_id, 
+                                    category.color, 
+                                    resources.description, 
+                                    resources.ref_name, 
+                                    'share' AS resource_type
+                                FROM resources
+                                INNER JOIN category ON resources.category_id = category.category_id
+                                WHERE sharer_id = ? 
+                                AND resources.latest_access_time >= CURDATE() - INTERVAL 7 DAY
+                                ORDER BY latest_access_time DESC;`;
+                rows = await conn.query(query,[user_id,user_id]);
+                return rows;
+            } catch (error) {
+                console.error('Error occurred while retrieving resources:', error);
+                return {
+                    error: true,
+                    message: 'An error occurred while retrieving the resources. Please try again later.',
+                };
+            } finally {
+                if (conn) conn.release(); 
+            }
+        },
+
     
     async getMyShareLinksResources(sharer_id){
         const conn = await getConnection();
@@ -178,15 +218,18 @@ const ResourceSharingDAO = {
     async getResourceDetails(resource_id, receiver_id = null) {
         const conn = await getConnection();
         try {
-            let query = `SELECT
+            let query;
+            let queryParams = [resource_id];
+    
+            if (receiver_id) {
+                query = `SELECT
                             resources.resource_id,
                             resources.link, 
                             resources.description,
                             resources.ref_name,
                             resources.sessem,
-                            resources.owner,
-                            resources.shared_at,
-                            users.name,
+                            DATE_FORMAT(resources.shared_at, '%d/%m/%Y %r') AS shared_at,
+                            users.name AS sharer_name,
                             category.category_name,
                             category.color
                         FROM 
@@ -194,18 +237,30 @@ const ResourceSharingDAO = {
                         INNER JOIN 
                             users ON resources.sharer_id = users.user_id
                         INNER JOIN
-                            category ON category.category_id = resources.category_id`;
-            
-            let queryParams = [resource_id];
-    
-            if (receiver_id) {
-                query += ` INNER JOIN
+                            category ON category.category_id = resources.category_id
+                        INNER JOIN
                             sharing ON resources.resource_id = sharing.resource_id
-                           WHERE 
+                        WHERE 
                             resources.resource_id = ? AND sharing.receiver_id = ?`;
                 queryParams.push(receiver_id);
             } else {
-                query += ` WHERE 
+                query = `SELECT
+                            resources.resource_id,
+                            resources.link, 
+                            resources.description,
+                            resources.ref_name,
+                            resources.sessem,
+                            resources.owner,  
+                            DATE_FORMAT(resources.shared_at, '%d/%m/%Y %r') AS shared_at,
+                            category.category_name,
+                            category.color
+                        FROM 
+                            resources
+                        INNER JOIN 
+                            users ON resources.sharer_id = users.user_id
+                        INNER JOIN
+                            category ON category.category_id = resources.category_id
+                        WHERE 
                             resources.resource_id = ?`;
             }
     
@@ -220,7 +275,26 @@ const ResourceSharingDAO = {
         } finally {
             conn.release();
         }
+    },
+
+    async updateAccessTime(resource_id, receiver_id = null) {
+        const conn = await getConnection();
+        try {
+            const accessTime = new Date();
+            if(receiver_id){
+                const receiverQuery = `UPDATE sharing SET latest_access_time = ? WHERE resource_id = ? AND receiver_id = ?`;
+                await conn.query(receiverQuery, [accessTime, resource_id, receiver_id]);
+            }else{
+                const query = `UPDATE resources SET latest_access_time = ? WHERE resource_id = ?`;
+                await conn.query(query, [accessTime, resource_id, receiver_id]);
+            }
+        } catch (error) {
+            console.error('Error occurred while updating access time:', error);
+        } finally {
+            conn.release();
+        }
     }
+    
     
     
 } 

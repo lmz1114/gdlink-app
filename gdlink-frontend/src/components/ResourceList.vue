@@ -3,11 +3,12 @@
     <div class="grid-layout">
         <div style="width: 180px;" v-for="(resource, index) in resources" :key="index"> 
           <ResourceBox 
-          @click="viewDetails(`${resource.resource_id}`)"
-            :category_color="resource.color"
-            :ref_name="resource.ref_name"
-            :description="resource.description"
-          />
+          @click="viewDetails(resource.resource_id, resource.resource_type)"
+          :category_color="resource.color"
+          :ref_name="resource.ref_name"
+          :description="resource.description"
+          :resource_type="resource.resource_type" 
+        />
       </div>
     </div>
   </div>
@@ -27,9 +28,12 @@
       },
     },
     methods:{
-      async viewDetails(id){
-        console.log(id);
-        this.$router.push({ name: 'Resource Details', params: { resource_id: id } });
+      async viewDetails(id,type){
+        if(type){
+          this.$emit("viewDetails",id,type);
+        }else{
+          this.$emit("viewDetails", id);
+        }
       },
     }
   };

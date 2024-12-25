@@ -20,7 +20,8 @@ const routes = [
   { path: '/shared_with_me', name:'Share with me', component: ShareWithMePage},
   { path: '/notification', name:'Notification', component: NotificationPage},
   { path: '/profile', name:'Profile', component: ProfilePage},
-  { path: '/resources/:resource_id', name:'Resource Details', component: ResourceDetailsPage}
+  { path: '/my_sharelinks/resources/:resource_id', name:'My ShareLinks Resource Details', component: ResourceDetailsPage, meta: { view: 'share' }},
+  { path: '/shared_with_me/resources/:resource_id', name:'Shared With Me Resource Details', component: ResourceDetailsPage, meta: { view: 'receive' }}
 ]
 
 const router = createRouter({

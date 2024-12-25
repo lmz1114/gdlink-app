@@ -19,6 +19,7 @@
                 />
                 <MyShareLinkResources
                     :resources="myResources"
+                    @viewDetails = "viewDetails"
                 />
             </section>
         </template>
@@ -60,6 +61,7 @@ export default {
     methods:{
         async displayMyShareLinksResources() {
             this.myResources = await ResourcesSharingService.getMyShareLinksResources(this.userId);
+            console.log(this.myResources);
         },
         async displayFilteredResources() {
             this.myResources = await ResourcesSharingService.getFilteredMyShareLinksResources(this.userId,this.selectedCategories,this.selectedSemesters);
@@ -88,6 +90,9 @@ export default {
             else{
                 this.displayMyShareLinksResources();
             }
+        },
+        viewDetails(id){
+            this.$router.push({ name: 'My ShareLinks Resource Details', params: { resource_id: id } });
         }
     }
 };

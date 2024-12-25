@@ -79,10 +79,18 @@ const ResourcesSharingService = {
         }
     },
 
-    async getResourceDetails(resource_id){
+    async getMyShareLinksResourceDetails(resource_id){
         try {
-            console.log(resource_id);
             const response = await axios.get(`${API_BASE_URL}/${resource_id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
+    },
+
+    async getSharedWithMeResourceDetails(resource_id,user_id){
+        try {
+            const response = await axios.get(`${API_BASE_URL}/${resource_id}/${user_id}`);
             return response.data;
         } catch (error) {
             console.error('Error fetching resources:', error);
