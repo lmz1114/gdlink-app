@@ -21,7 +21,8 @@ const routes = [
   { path: '/notification', name:'Notification', component: NotificationPage},
   { path: '/profile', name:'Profile', component: ProfilePage},
   { path: '/my_sharelinks/resources/:resource_id', name:'My ShareLinks Resource Details', component: ResourceDetailsPage, meta: { view: 'share' }},
-  { path: '/shared_with_me/resources/:resource_id', name:'Shared With Me Resource Details', component: ResourceDetailsPage, meta: { view: 'receive' }}
+  { path: '/shared_with_me/resources/:resource_id', name:'Shared With Me Resource Details', component: ResourceDetailsPage, meta: { view: 'receive' }},
+  { path: '/favourites/resources/:resource_id', name:'Favourites Resource Details', component: ResourceDetailsPage, meta: { view: 'receive' }}
 ]
 
 const router = createRouter({

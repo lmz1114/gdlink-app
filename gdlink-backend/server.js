@@ -12,6 +12,7 @@ const profileRouter = require('./router/profile');
 const ResourcesSharingRouter = require('./router/ResourcesSharingRouter');
 const CategoryRouter = require('./router/CategoryRouter');
 const HomeRouter = require('./router/HomeRouter');
+const FavouriteRouter = require('./router/FavouriteRouter');
 
 // Middleware to parse JSON request bodies
 app.use(express.json()); 
@@ -22,6 +23,8 @@ app.use('/profile', profileRouter);
 app.use('/resources', ResourcesSharingRouter);
 app.use('/categories', CategoryRouter);
 app.use('/home', HomeRouter);
+app.use('/favourites', FavouriteRouter);
+
 
 
 // 404 Fallback

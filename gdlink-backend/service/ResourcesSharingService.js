@@ -1,6 +1,7 @@
 // services/itemService.js
 const UserDAO = require('../DAO/UserDAO');
 const ResourcesSharingDAO = require('../DAO/ResourcesSharingDAO');
+const FavouriteDAO = require('../DAO/FavouriteDAO');
 
 const ResourceSharingService = {
     async shareResource(sharer_id, resource) {
@@ -90,7 +91,12 @@ const ResourceSharingService = {
     async getResourceDetails(resource_id,receiver_id = null){
         try{
             await ResourcesSharingDAO.updateAccessTime(resource_id, receiver_id);
-            return await ResourcesSharingDAO.getResourceDetails(resource_id, receiver_id);
+            const resourceDetails = await ResourcesSharingDAO.getResourceDetails(resource_id, receiver_id);
+            if(receiver_id){
+                const isFavouriteStatus = await FavouriteDAO.isFavourite(receiver_id, resource_id);
+                resourceDetails[0].isFavourite = isFavouriteStatus;
+            }
+            return resourceDetails;
         } catch (error) {
             console.error('Service Error:', error);
             return {

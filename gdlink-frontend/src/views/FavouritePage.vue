@@ -8,9 +8,19 @@
                   </svg>
                       <h2><strong>Favourites</strong></h2>
                 </div>
-                <SearchBar></SearchBar>
-                <FilterField class="float-start"/>
-                <displayResource class="flex-box"/>
+                <SearchBar
+                    @search = "search"
+                />
+               
+                <FilterField 
+                    @filtercategory="updateCategory"
+                    @filtersemester="updateSemester"
+                    class="float-start w-100 mb-5"
+                />
+                <FavouriteResources 
+                  :resources="favouriteResources" 
+                  @viewDetails = "viewDetails"
+                />
               </div>
         </template>
     </DefaultLayout>
@@ -20,14 +30,68 @@
 import FilterField from '../components/FilterField.vue';
 import DefaultLayout from '../components/DefaultLayout.vue';
 import SearchBar from '../components/SearchBar.vue';
-
+import FavouriteResources from '../components/ResourceList.vue'
+import FavouriteService from '../service/FavouriteService';
 
 export default {
-    components: {
+  data() {
+      return {
+        userId: null,
+        favouriteResources: [],
+        selectedCategories: null,
+        selectedSemesters: null,
+        key: null
+      };
+    },
+  components: {
       FilterField,
       SearchBar,
-      DefaultLayout
+      DefaultLayout,
+      FavouriteResources
+  },
+  created() {
+    const sessionData = sessionStorage.getItem('utmwebfc_session');
+      if (sessionData) {
+            const userSession = JSON.parse(sessionData);
+            this.userId = userSession.user_id;
+        }
+        this.displayFavouriteResources();
     },
+    methods:{
+        async displayFavouriteResources() {
+            this.favouriteResources = await FavouriteService.getFavouriteResources(this.userId);
+        },
+        async displayFilteredResources() {
+            this.favouriteResources = await FavouriteService.getFilteredFavouriteResources(this.userId,this.selectedCategories,this.selectedSemesters);
+        },
+        async displaySearchedResources() {
+            this.favouriteResources = await FavouriteService.getSearchedFavouriteResources(this.userId,this.key);
+        },
+        updateCategory(categories) {
+            this.selectedCategories = categories;
+            console.log(this.selectedCategories);
+            this.reloadPage();
+        },
+        updateSemester(semesters) {
+            this.selectedSemesters = semesters;
+            this.reloadPage();
+        },
+        reloadPage() {
+            this.displayFilteredResources();
+        },
+        search(key){
+            this.key = key;
+            if(key){
+                this.displaySearchedResources();
+            }
+            else{
+                this.displayFavouriteResources();
+            }
+        },
+        viewDetails(id){
+            this.$router.push({ name: 'Favourites Resource Details', params: { resource_id: id } });
+        }
+    }
 };
 </script>
 
