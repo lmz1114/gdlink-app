@@ -30,9 +30,9 @@ data() {
 computed: {
   chartData() {
     return {
-      labels: this.resources.map((resource) => resource.category_name),
-      counts: this.resources.map((resource) => resource.category_count),
-      colors: this.resources.map((resource) => resource.category_color),
+      labels: this.resources.map((resource) => resource.categoryName),
+      counts: this.resources.map((resource) => resource.categoryCount),
+      colors: this.resources.map((resource) => resource.categoryColor),
     };
   },
 },
@@ -82,43 +82,40 @@ methods: {
             },
           },
           title: {
-              display: true, // Show the title
-              text: 'Total Shared With Me', // Title text
-              position: 'top', // Title position: top, left, right, bottom
+              display: true, 
+              text: 'Total Shared With Me', 
+              position: 'top', 
               font: {
                   size: 30,
               },
               color: "#000000" ,
               padding: {
-              top: 10, // Padding from the top
-              bottom: 10, // Padding from the bottom
+              top: 10, 
+              bottom: 10, 
               }
           },
         },
       },
     });
-    // Register the custom plugin here, not inside the chart options
-    const plugin = {
-      id: 'SharedWithMeCenterText',
-      afterDraw(chart) {
-        const ctx = chart.ctx;
-        const x = chart.getDatasetMeta(0).data[0].x;
-        const y = chart.getDatasetMeta(0).data[0].y;
-        const total = chart.data.datasets[0].data.reduce((sum, value) => sum + value, 0);
+    // const plugin = {
+    //   id: 'SharedWithMeCenterText',
+    //   afterDraw(chart) {
+    //     const ctx = chart.ctx;
+    //     const x = chart.getDatasetMeta(0).data[0].x;
+    //     const y = chart.getDatasetMeta(0).data[0].y;
+    //     const total = chart.data.datasets[0].data.reduce((sum, value) => sum + value, 0);
 
 
-        // Set the style for the text
-        ctx.font = "bold 20px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "#000";  // Set the text color
+    //     ctx.font = "bold 20px Arial";
+    //     ctx.textAlign = "center";
+    //     ctx.textBaseline = "middle";
+    //     ctx.fillStyle = "#000";  
 
-        // Add the totalUploads value in the center of the chart
-        ctx.fillText(total, x, y);
-      }
-    };
+    //     ctx.fillText(total, x, y);
+    //   }
+    // };
 
-    Chart.register(plugin);
+    // Chart.register(plugin);
   },
   updateChart() {
     this.chart.data.labels = this.chartData.labels;

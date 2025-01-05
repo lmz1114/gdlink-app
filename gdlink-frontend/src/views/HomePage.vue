@@ -7,9 +7,9 @@
           <strong v-if="userSession">{{ userSession.name }}</strong>
         !!!</h4>
       </div>
-      <div class="d-flex justify-content-center gap-4">
-        <MyShareLinksChart :resources="myShareLinksResources" class="bg-white w-100"/>
-        <SharedWithMeChart :resources="sharedWithMeResources" class="bg-white w-100"/>
+      <div class="d-flex justify-content-center">
+        <ResourcesChart :resources="myShareLinksResources" :chartTitle="'Total My ShareLinks'" class="bg-white w-50 me-2"/>
+        <ResourcesChart :resources="sharedWithMeResources" :chartTitle="'Total Shared With You'" class="bg-white w-50 ms-2"/>
       </div>
       <div class="recent border rounded mt-4 shadow-sm bg-white p-4">
         <h2 class="mb-4">Recent Access</h2>
@@ -25,8 +25,7 @@
   <script>
   import HomeService from '../service/HomeService';
   import DefaultLayout from '../components/DefaultLayout.vue'; 
-  import MyShareLinksChart from '../components/MyShareLinksChart.vue';
-  import SharedWithMeChart from '../components/SharedWithMeChart.vue';
+  import ResourcesChart from '../components/ResourcesChart.vue';
   import RecentAccessResources from '../components/ResourceList.vue'
   
   export default {
@@ -43,8 +42,7 @@
     },
     components: {
       DefaultLayout,
-      MyShareLinksChart,
-      SharedWithMeChart,
+      ResourcesChart,
       RecentAccessResources
     },
     created() {
@@ -65,11 +63,11 @@
       async displayRecentAccess(){
         this.recentAccessResources = await HomeService.getRecentAccessResource(this.userId);
       },
-      async viewDetails(id,type){
-        if(type === "share"){
-          this.$router.push({ name: 'My ShareLinks Resource Details', params: { resource_id: id } });
+      async viewDetails(resourceId,resourceType){
+        if(resourceType === "share"){
+          this.$router.push({ name: 'My ShareLinks Resource Details', params: { resourceId: resourceId } });
         }else{
-          this.$router.push({ name: 'Shared With Me Resource Details', params: { resource_id: id } });
+          this.$router.push({ name: 'Shared With Me Resource Details', params: { resourceId: resourceId } });
         }
       }
     }
@@ -77,10 +75,6 @@
   </script>
   
   <style scoped>
-
-  .bg-white{
-    background-color: white;
-  }
 
   .recent{
     min-height: 500px;

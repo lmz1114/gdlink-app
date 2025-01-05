@@ -65,6 +65,7 @@
                 class="btn btn-primary" 
                 style="width: 40%"
                 @click="handleSubmit"
+                data-bs-dismiss="modal"
               >Change Password</button>
             </div>
           </div>
@@ -74,7 +75,7 @@
   </template>
   
   <script>
-  import axios from 'axios';
+  import ProfileService from '../service/ProfileService';
 
   export default {
     props: {
@@ -100,10 +101,9 @@
       }
     },
     methods: {
-      handleSubmit() {
-        this.processChangePassword();
+      async handleSubmit() {
+        await this.processChangePassword();
         this.resetForm();
-        window.location.reload();
       },
       resetForm() {
         this.currentPassword = '';
@@ -113,14 +113,8 @@
       },
       async processChangePassword(){
         try{
-          const response = await axios.post(`http://localhost:8081/profile/change_password/${this.userId}`,
-          {
-            isDefaultPassword: this.isDefaultPassword,
-            currentPassword: this.currentPassword,
-            newPassword: this.newPassword,
-            confirmPassword: this.confirmPassword,
-          });
-          alert(response.data.message);
+          const data = await ProfileService.updatePassword(this.userId,this.currentPassword,this.newPassword,this.confirmPassword);
+          alert(data.message);
         }catch(error){
           if (error.response) {
             this.errorMessage = error.response.data.message || "An error occurred.";

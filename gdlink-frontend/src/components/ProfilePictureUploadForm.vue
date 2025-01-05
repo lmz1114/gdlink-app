@@ -37,7 +37,7 @@
               </div>
               <div v-else class="d-flex align-items-center justify-content-center">
                 <div class="preview-image">
-                  <img :src = "previewImage" alt="Image Preview">
+                  <img ref="imagePreview" :src = "previewImage" alt="Image Preview">
                   <span class="close" @click="removePreview">&times;</span>
                 </div>
               </div>
@@ -67,17 +67,22 @@
 </template>
 
 <script>
-import axios from 'axios';
+import 'cropperjs/dist/cropper.css';
+
+import Cropper from 'cropperjs';
+import ProfileService from '@/service/ProfileService';
 
 export default {
   data() {
     return {
       userId: null,
       file: null,
-      previewImage: null
+      previewImage: null,
+      cropper: null,
+      croppedImage: null
     };
   },
-  created() {
+  mounted() {
       const sessionData = sessionStorage.getItem('utmwebfc_session');
       if (sessionData) {
         const userSession = JSON.parse(sessionData);
@@ -85,8 +90,15 @@ export default {
       }
   },
   methods: {
+    base64ToFile(base64, fileName, mimeType = 'image/png') {
+      const byteCharacters = atob(base64.split(',')[1]);
+      const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
+      const byteArray = new Uint8Array(byteNumbers);
+      return new File([byteArray], fileName, { type: mimeType });
+    },
+
+
     handleFileSelect(event) {
-      console.log(event.target.files.length);
       if (event.target.files.length > 1) {
         alert('Please select only one image.');
         return;
@@ -95,18 +107,42 @@ export default {
       if (selectedFile) {
         this.file = selectedFile;
         this.previewImage = URL.createObjectURL(this.file);
-        console.log(this.previewImage);
+        this.$nextTick(() => {
+          if (this.cropper) {
+            this.cropper = null;
+          }
+
+          this.cropper = new Cropper(this.$refs.imagePreview, {
+        
+            zoomable: false,
+            scalable: false,
+
+            aspectRatio: 1,
+            // ready() {
+            //     document.querySelector('.cropper-container').style.width = '190px';
+            //     document.querySelector('.cropper-container').style.display = 'flex';
+            //     document.querySelector('.cropper-container').style.justifyContent = 'center';
+            //     document.querySelector('.cropper-container').style.alignItems = 'center';
+            // },
+            crop: () => {
+              const canvas =this.cropper.getCroppedCanvas();
+              this.croppedImage = canvas.toDataURL("image/png");
+            }
+          });
+        });
       }
     },
     handleDragOver(event) {
       event.preventDefault();
     },
     handleDrop(event) {
-      if (event.target.files.length > 1) {
-        alert('Please select only one image.');
+      if (event.dataTransfer.files.length > 1) {
+        alert('Please drop only one image.');
         return;
       }
+      console.log(event);
       const droppedFile = event.dataTransfer.files[0];
+      console.log(droppedFile)
       if (droppedFile) {
         this.file = droppedFile;
         this.previewImage = URL.createObjectURL(this.file);
@@ -122,11 +158,11 @@ export default {
       }
       this.previewImage=null;
     },
-    submitFile() {
+    async submitFile() {
       if (this.file) {
-        this.processUpload();
+        await this.processUpload();
         this.resetFile();
-        window.location.reload();
+        this.$emit('refresh');
       }
     },
     resetFile() {
@@ -139,14 +175,14 @@ export default {
         return;
       }
 
+      const file = this.base64ToFile(this.croppedImage, `profile-pic-${this.userId}.png`);
+
       const formData = new FormData();
-      formData.append('image', this.file);
+      formData.append('image', file);
 
       try {
-        const response = await axios.post(`http://localhost:8081/profile/upload_image/${this.userId}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-          alert(response.data.message);
+        const data = await ProfileService.updatePicture(this.userId,formData);
+          alert(data.message);
         } catch (error) {
           alert('Failed to upload image.');
         }
@@ -201,7 +237,7 @@ export default {
 .preview-image img {
   max-width: 100%;
   max-height: 100%;
-  object-fit: fill; /* Ensures the image scales to fit without distortion */
+  object-fit: contain; /* Ensures the image scales to fit without distortion */
 }
 
 .close{
@@ -211,5 +247,18 @@ export default {
   top: -10px;
   right: 2px;
   cursor: pointer;
+}
+
+.cropper-container {
+    direction: ltr;
+    font-size: 0;
+    line-height: 0;
+    position: relative;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    width: 190px!important;
 }
 </style>

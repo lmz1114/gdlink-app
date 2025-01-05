@@ -1,14 +1,15 @@
 const { getConnection } = require('../db');
+const {snakeToCamel} = require('../tools/camelTransform');
 
 const FavouriteDAO = {
-    async setFavourite(user_id,resource_id){
+    async setFavourite(userId,resourceId){
         const conn = await getConnection();
         try{
             const query = `
                 INSERT INTO favourite_resources (user_id, resource_id)
                 VALUES (?, ?)`;
             
-            const result = await conn.query(query,[user_id,resource_id]);
+            const result = await conn.query(query,[userId,resourceId]);
             if (result.affectedRows > 0) {
                 return { success: true, message: 'Resource added to favourites successfully' };
             } else {
@@ -25,11 +26,11 @@ const FavouriteDAO = {
             if(conn) conn.release();
         }
     },
-    async removeFavourite(user_id,resource_id){
+    async removeFavourite(userId,resourceId){
         const conn = await getConnection();
         try{
             const query = `DELETE FROM favourite_resources WHERE user_id = ? AND resource_id = ?;`;
-            const result = await conn.query(query,[user_id,resource_id]);
+            const result = await conn.query(query,[userId,resourceId]);
             if (result.affectedRows > 0) {
                 return { success: true, message: 'Resource removed from favourites successfully' };
             } else {
@@ -45,11 +46,11 @@ const FavouriteDAO = {
             if(conn) conn.release();
         }
     },
-    async isFavourite(user_id,resource_id){
+    async isFavourite(userId,resourceId){
         const conn = await getConnection();
         try{
             const query = `SELECT * FROM favourite_resources WHERE user_id = ? AND resource_id = ?;`;
-            const row = await conn.query(query,[user_id,resource_id]);
+            const row = await conn.query(query,[userId,resourceId]);
             return row.length > 0;
         }catch(error){
             console.error('Error occurred while checking is favourite:', error);
@@ -61,15 +62,16 @@ const FavouriteDAO = {
             if(conn) conn.release();
         }
     },
-    async getFavouriteResources(user_id){
+    async getFavouriteResources(userId){
         const conn = await getConnection();
         try {
-            const query = `SELECT r.resource_id,c.color,
+            const query = `SELECT r.resource_id,r.sessem,
+                                    c.category_name, c.color,
                             r.description,r.ref_name 
                             FROM resources r INNER JOIN favourite_resources f ON r.resource_id = f.resource_id
                             INNER JOIN category c ON r.category_id = c.category_id WHERE f.user_id = ? ORDER BY f.created_at DESC;`;
-            rows = await conn.query(query,[user_id]);
-            return rows;
+            rows = await conn.query(query,[userId]);
+            return rows.map(snakeToCamel);
         } catch (error) {
             console.error('Error occurred while retrieving resources:', error);
             return {
@@ -80,15 +82,15 @@ const FavouriteDAO = {
             if (conn) conn.release(); 
         }
     },
-    async getFilteredResources(user_id,categories,semesters){
+    async getFilteredResources(userId,categories,semesters){
         const conn = await getConnection();
-        console.log(categories);
         try {
-            let query = `SELECT r.resource_id,c.color,
+            let query = `SELECT r.resource_id,r.sessem,
+                                    c.category_name,c.color,
                             r.description,r.ref_name 
                             FROM resources r INNER JOIN favourite_resources f ON r.resource_id = f.resource_id
                             INNER JOIN category c ON r.category_id = c.category_id WHERE f.user_id = ?`;
-            let queryParams = [user_id];
+            let queryParams = [userId];
     
             if (categories && categories.length > 0) {
                 query += ' AND category_name IN (?)';
@@ -103,8 +105,7 @@ const FavouriteDAO = {
             query += ' ORDER BY created_at DESC;'
     
             const rows = await conn.query(query, queryParams);
-            console.log(rows);
-            return rows;
+            return rows.map(snakeToCamel);
         } catch (error) {
             console.error('Error fetching filtered resources:', error);
             throw error; 
@@ -113,11 +114,13 @@ const FavouriteDAO = {
         }
     },
 
-    async getSearchedResources(user_id,key){
+    async getSearchedResources(userId,key){
         const conn = await getConnection();
         try {
             let query = `SELECT 
                             r.resource_id,
+                            r.sessem,
+                            c.category_name,
                             c.color,
                             r.description,
                             r.ref_name,
@@ -133,9 +136,9 @@ const FavouriteDAO = {
                             relevance DESC;
                         `;
                     
-            const rows = await conn.query(query, [key,user_id,key]);
+            const rows = await conn.query(query, [key,userId,key]);
 
-            return rows;
+            return rows.map(snakeToCamel);
         } catch (error) {
             console.error('Error fetching filtered resources:', error);
             throw error; 

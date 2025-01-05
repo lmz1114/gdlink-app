@@ -3,10 +3,10 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:8081/resources';
 
 const ResourcesSharingService = {
-    async shareResource(user_id,resource){
+    async shareResource(userId,resource){
+        console.log(resource);
         try {
-            console.log("hey");
-            const response = await axios.post(`${API_BASE_URL}/share/${user_id}`,{
+            const response = await axios.post(`${API_BASE_URL}/share/${userId}`,{
                 resource: resource
             });
             return response.data;
@@ -15,27 +15,52 @@ const ResourcesSharingService = {
         }
     },
 
-    async getMyShareLinksResources(user_id){
+    async editResource(userId,resourceId,previousShareTo,previousReceiverGroups,previousReceivers,resource){
         try {
-            const response = await axios.get(`${API_BASE_URL}/my_sharelink/${user_id}`);
+            const response = await axios.put(`${API_BASE_URL}/edit/${userId}/${resourceId}`,{
+                resourceId: resourceId,
+                previousShareTo : previousShareTo,
+                resource: resource,
+                previousReceiverGroups: previousReceiverGroups,
+                previousReceivers: previousReceivers
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error editing resource:', error);
+        }
+    },
+
+    async deleteResource(resourceId) { 
+        try {
+            const response = await axios.delete(`${API_BASE_URL}/delete/${resourceId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Delete SErvice Error:', error);
+            throw error;  
+        }
+    },
+
+    async getMyShareLinksResources(userId){
+        try {
+            const response = await axios.get(`${API_BASE_URL}/my_sharelink/${userId}`);
             return response.data;
         } catch (error) {
             console.error('Error fetching resources:', error);
         }
     },
 
-    async getSharedWithMeResources(user_id){
+    async getSharedWithMeResources(userId){
         try {
-            const response = await axios.get(`${API_BASE_URL}/shared_with_me/${user_id}`);
+            const response = await axios.get(`${API_BASE_URL}/shared_with_me/${userId}`);
             return response.data;
         } catch (error) {
             console.error('Error fetching resources:', error);
         }
     },
 
-    async getFilteredMyShareLinksResources(user_id,selectedCategories,selectedSemesters){
+    async getFilteredMyShareLinksResources(userId,selectedCategories,selectedSemesters){
         try {
-            const response = await axios.post(`${API_BASE_URL}/my_sharelink/${user_id}/filter`,{
+            const response = await axios.post(`${API_BASE_URL}/my_sharelink/${userId}/filter`,{
                 categories: selectedCategories,
                 semesters: selectedSemesters,
             });
@@ -45,9 +70,9 @@ const ResourcesSharingService = {
         }
     },
 
-    async getFilteredSharedWithMeResources(user_id,selectedCategories,selectedSemesters){
+    async getFilteredSharedWithMeResources(userId,selectedCategories,selectedSemesters){
         try {
-            const response = await axios.post(`${API_BASE_URL}/shared_with_me/${user_id}/filter`,{
+            const response = await axios.post(`${API_BASE_URL}/shared_with_me/${userId}/filter`,{
                 categories: selectedCategories,
                 semesters: selectedSemesters,
             });
@@ -57,9 +82,9 @@ const ResourcesSharingService = {
         }
     },
 
-    async getSearchedMyShareLinksResources(user_id,key){
+    async getSearchedMyShareLinksResources(userId,key){
         try {
-            const response = await axios.post(`${API_BASE_URL}/my_sharelink/${user_id}/search`,{
+            const response = await axios.post(`${API_BASE_URL}/my_sharelink/${userId}/search`,{
                 key: key
             });
             return response.data;
@@ -68,9 +93,9 @@ const ResourcesSharingService = {
         }
     },
 
-    async getSearchedSharedWithMeResources(user_id,key){
+    async getSearchedSharedWithMeResources(userId,key){
         try {
-            const response = await axios.post(`${API_BASE_URL}/shared_with_me/${user_id}/search`,{
+            const response = await axios.post(`${API_BASE_URL}/shared_with_me/${userId}/search`,{
                 key: key
             });
             return response.data;
@@ -79,18 +104,18 @@ const ResourcesSharingService = {
         }
     },
 
-    async getMyShareLinksResourceDetails(resource_id){
+    async getMyShareLinksResourceDetails(resourceId){
         try {
-            const response = await axios.get(`${API_BASE_URL}/${resource_id}`);
+            const response = await axios.get(`${API_BASE_URL}/${resourceId}`);
             return response.data;
         } catch (error) {
             console.error('Error fetching resources:', error);
         }
     },
 
-    async getSharedWithMeResourceDetails(resource_id,user_id){
+    async getSharedWithMeResourceDetails(resourceId,userId){
         try {
-            const response = await axios.get(`${API_BASE_URL}/${resource_id}/${user_id}`);
+            const response = await axios.get(`${API_BASE_URL}/${resourceId}/${userId}`);
             return response.data;
         } catch (error) {
             console.error('Error fetching resources:', error);

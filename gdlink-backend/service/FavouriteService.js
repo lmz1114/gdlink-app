@@ -1,9 +1,9 @@
 const FavouriteDAO = require('../DAO/FavouriteDAO');
 
 const FavouriteService = {
-    async setFavourite(user_id,resource_id){
+    async setFavourite(userId,resourceId){
         try{
-           return await FavouriteDAO.setFavourite(user_id,resource_id);
+           return await FavouriteDAO.setFavourite(userId,resourceId);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -14,9 +14,9 @@ const FavouriteService = {
         }
     },
 
-    async removeFavourite(user_id,resource_id){
+    async removeFavourite(userId,resourceId){
         try{
-            return await FavouriteDAO.removeFavourite(user_id,resource_id);
+            return await FavouriteDAO.removeFavourite(userId,resourceId);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -27,9 +27,9 @@ const FavouriteService = {
         }
     },
 
-    async getFavouriteResources(user_id){
+    async getFavouriteResources(userId){
         try{
-            return await FavouriteDAO.getFavouriteResources(user_id);
+            return await FavouriteDAO.getFavouriteResources(userId);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -40,9 +40,9 @@ const FavouriteService = {
         }
     },
 
-    async getFilteredResources(user_id,categories,semesters){
+    async getFilteredResources(userId,categories,semesters){
         try{
-            return await FavouriteDAO.getFilteredResources(user_id,categories,semesters);
+            return await FavouriteDAO.getFilteredResources(userId,categories,semesters);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -53,9 +53,9 @@ const FavouriteService = {
         }
     },
 
-    async getSearchedResources(user_id,key){
+    async getSearchedResources(userId,key){
         try{
-            return await FavouriteDAO.getSearchedResources(user_id,key);
+            return await FavouriteDAO.getSearchedResources(userId,key);
         } catch (error) {
             console.error('Service Error:', error);
     

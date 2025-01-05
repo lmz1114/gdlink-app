@@ -8,23 +8,27 @@ app.use(cors()); // Allows all domains to access the backend
 
 // Import Routers
 const loginRouter = require('./router/login');
-const profileRouter = require('./router/profile');
+const ProfileRouter = require('./router/ProfileRouter');
 const ResourcesSharingRouter = require('./router/ResourcesSharingRouter');
 const CategoryRouter = require('./router/CategoryRouter');
 const HomeRouter = require('./router/HomeRouter');
 const FavouriteRouter = require('./router/FavouriteRouter');
+const GroupRouter = require('./router/GroupRouter');
+const GroupMemberRouter = require('./router/GroupMemberRouter')
+
 
 // Middleware to parse JSON request bodies
 app.use(express.json()); 
 
 // Use the routes
 app.use('/login', loginRouter);
-app.use('/profile', profileRouter);
+app.use('/profile', ProfileRouter);
 app.use('/resources', ResourcesSharingRouter);
 app.use('/categories', CategoryRouter);
 app.use('/home', HomeRouter);
 app.use('/favourites', FavouriteRouter);
-
+app.use('/groups', GroupRouter);
+app.use('/groups/members', GroupMemberRouter);
 
 
 // 404 Fallback

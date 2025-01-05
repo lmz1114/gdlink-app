@@ -1,7 +1,7 @@
 <template>
-  <section v-show="resources.length" class="border mt-4 p-3 rounded shadow-sm">
+  <section class="border mt-4 p-3 rounded shadow-sm">
     <div class="position-relative d-flex justify-content-center align-items-center" style="min-height: 50vh;">
-        <canvas id="myShareLinksChart"></canvas>
+        <canvas ref="resourcesChart"></canvas>
     </div>
 </section>
 </template>
@@ -11,7 +11,6 @@ import { Chart, DoughnutController, ArcElement, Tooltip, Legend, Title } from "c
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend, Title);
 
 export default {
-name: "MyShareLinksChart",
 props: {
   resources: {
     type: Array,
@@ -29,10 +28,17 @@ data() {
 },
 computed: {
   chartData() {
+    if(this.resources.length === 0){
+      return {
+        labels: ['No Resource'],
+        counts: [1],
+        colors: ['#000000'],
+      };
+    }
     return {
-      labels: this.resources.map((resource) => resource.category_name),
-      counts: this.resources.map((resource) => resource.category_count),
-      colors: this.resources.map((resource) => resource.category_color),
+      labels: this.resources.map((resource) => resource.categoryName),
+      counts: this.resources.map((resource) => resource.categoryCount),
+      colors: this.resources.map((resource) => resource.categoryColor),
     };
   },
 },
@@ -55,7 +61,8 @@ watch: {
 },
 methods: {
   createChart() {
-    const ctx = document.getElementById("myShareLinksChart").getContext("2d");
+    const ctx = this.$refs.resourcesChart.getContext("2d");
+    const resourcesLength = this.resources.length;
     this.chart = new Chart(ctx, {
       type: "doughnut", 
       data: {
@@ -77,13 +84,14 @@ methods: {
             onClick: null
           },
           tooltip: {
+            enabled: resourcesLength,
             callbacks: {
               label: (context) => `${context.label}: ${context.raw}`,
             },
           },
           title: {
-              display: true, // Show the title
-              text: 'Total My ShareLinks', // Title text
+              display: true, 
+              text: this.chartTitle, // Title text
               position: 'top', // Title position: top, left, right, bottom
               font: {
                   size: 30,
@@ -94,31 +102,31 @@ methods: {
               bottom: 10, // Padding from the bottom
               }
           },
-        },
+        },      
       },
+      plugins: [
+        {
+          id: "centerText",
+          afterDraw(chart) {
+            const ctx = chart.ctx;
+            const x = chart.getDatasetMeta(0).data[0].x;
+            const y = chart.getDatasetMeta(0).data[0].y;
+
+            const total = resourcesLength === 0? 0 : chart.data.datasets[0].data.reduce(
+                                                        (sum, value) => sum + value,
+                                                        0
+                                                      );
+
+            ctx.font = "bold 20px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#000"; 
+
+            ctx.fillText(total, x, y);
+          },
+        },
+      ],
     });
-    // Register the custom plugin here, not inside the chart options
-    const plugin = {
-      id: 'MyShareLinksCenterText',
-      afterDraw(chart) {
-        const ctx = chart.ctx;
-        const x = chart.getDatasetMeta(0).data[0].x;
-        const y = chart.getDatasetMeta(0).data[0].y;
-        const total = chart.data.datasets[0].data.reduce((sum, value) => sum + value, 0);
-
-
-        // Set the style for the text
-        ctx.font = "bold 20px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "#000";  // Set the text color
-
-        // Add the totalUploads value in the center of the chart
-        ctx.fillText(total, x, y);
-      }
-    };
-
-    Chart.register(plugin);
   },
   updateChart() {
     this.chart.data.labels = this.chartData.labels;
@@ -133,7 +141,7 @@ methods: {
 
 <style scoped>
 canvas {
-width: 300px;
-height: 300px;
+  width: 300px;
+  height: 300px;
 }
 </style>

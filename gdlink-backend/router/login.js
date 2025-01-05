@@ -39,7 +39,7 @@ router.post('/db_check', async (req, res) => {
       });
     }
 
-    if (bcrypt.compare(user.password,password)) {
+    if (await bcrypt.compare(password, user.password)) {
       return res.status(200).json({
         login_type: 0,
         message: 'User login successful.',

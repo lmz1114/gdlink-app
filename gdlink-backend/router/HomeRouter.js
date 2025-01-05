@@ -3,7 +3,7 @@ const HomeController = require('../controller/HomeController');
 
 const router = express.Router();
 
-router.get('/:user_id/chart', HomeController.getChartData); 
-router.get('/:user_id/recent_access', HomeController.getRecentAccessResources); 
+router.get('/:userId/chart', HomeController.getChartData); 
+router.get('/:userId/recent_access', HomeController.getRecentAccessResources); 
 
 module.exports = router;

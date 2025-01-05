@@ -3,35 +3,35 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:8081/favourites';
 
 const FavouriteService = {
-    async setFavourite(user_id,resource_id){
+    async setFavourite(userId,resourceId){
         try {
-            const response = await axios.post(`${API_BASE_URL}/add_to_favourites/${resource_id}/${user_id}`);
+            const response = await axios.post(`${API_BASE_URL}/add_to_favourites/${resourceId}/${userId}`);
             return response.data;
         } catch (error) {
             console.error('Error add to favourites:', error);
         }
     },
-    async removeFavourite(user_id,resource_id){
+    async removeFavourite(userId,resourceId){
         try {
-            const response =  await axios.delete(`${API_BASE_URL}/remove_from_favourites/${resource_id}/${user_id}`);
+            const response =  await axios.delete(`${API_BASE_URL}/remove_from_favourites/${resourceId}/${userId}`);
             return response.data;
         } catch (error) {
             console.error('Error remove from favourites:', error);
         }
     },
 
-    async getFavouriteResources(user_id){
+    async getFavouriteResources(userId){
         try {
-            const response = await axios.get(`${API_BASE_URL}/${user_id}`);
+            const response = await axios.get(`${API_BASE_URL}/${userId}`);
             return response.data;
         } catch (error) {
             console.error('Error fetching resources:', error);
         }
     },
 
-    async getFilteredFavouriteResources(user_id,selectedCategories,selectedSemesters){
+    async getFilteredFavouriteResources(userId,selectedCategories,selectedSemesters){
         try {
-            const response = await axios.post(`${API_BASE_URL}/${user_id}/filter`,{
+            const response = await axios.post(`${API_BASE_URL}/${userId}/filter`,{
                 categories: selectedCategories,
                 semesters: selectedSemesters,
             });
@@ -41,9 +41,9 @@ const FavouriteService = {
         }
     },
 
-    async getSearchedFavouriteResources(user_id,key){
+    async getSearchedFavouriteResources(userId,key){
         try {
-            const response = await axios.post(`${API_BASE_URL}/${user_id}/search`,{
+            const response = await axios.post(`${API_BASE_URL}/${userId}/search`,{
                 key: key,
             });
             return response.data;

@@ -24,25 +24,24 @@
   export default {
     data() {
       return {
-        key: '', // Holds the search query
-        isPressed: false, // Track if Enter key was pressed
+        key: '', 
+        isPressed: false, 
       };
     },
     methods: {
       handleInput() {
-        // Emit event when input is cleared
         if (this.key.trim() === '') {
-          this.$emit('search', ''); // Emit empty search event
+          this.$emit('search', ''); 
           console.log('Search input cleared');
         } else {
           console.log(`Searching for: ${this.key}`);
         }
       },
       onSearch() {
-        this.$emit('search', this.key); // Emit search query to parent
-        this.isPressed = true; // Set the flag to true when Enter is pressed
+        this.$emit('search', this.key); 
+        this.isPressed = true; 
         setTimeout(() => {
-          this.isPressed = false; // Reset after 300ms (time for the visual change)
+          this.isPressed = false; 
         }, 300);
       },
     },

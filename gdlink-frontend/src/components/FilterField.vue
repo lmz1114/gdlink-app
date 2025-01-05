@@ -1,13 +1,13 @@
 <template>
     <div class="d-flex align-items-center gap-5">
-      <div  id="btn-category">
+      <div id="btn-category">
         <div style="position:relative;">
-          <div class="select-btn" @click="selectButton('#btn-category')">
+          <div class="select-btn" @click="toggleDropdown('category')">
             <span class="btn-text">Category</span>
             <i class="bi bi-funnel-fill bi-solid"></i>
           </div>
         </div>
-        <ul class="list-items">
+        <ul class="list-items" v-show="dropdowns.category">
           <li class="items" v-for="(category,index) in categories" :key="category" :id="'item-category-' + index" :value="category"  @click="selectCheck(selectedCategory,'category',category,index)">
             <span class="checkbox">
               <i class="bi bi-check check-icon"></i>
@@ -19,12 +19,12 @@
 
       <div id="btn-semester">
         <div style="position:relative;">
-          <div class="select-btn" @click="selectButton('#btn-semester')">
+          <div class="select-btn" @click="toggleDropdown('semester')">
             <span class="btn-text">Semester</span>
             <i class="bi bi-funnel-fill bi-solid"></i>
           </div>
         </div>
-        <ul class="list-items">
+        <ul class="list-items" v-show="dropdowns.semester">
           <li class="items" v-for="(semester,index) in semesters" :key="semester" :id="'item-semester-' + index" :value="semester"  @click="selectCheck(selectedSemester,'semester',semester,index)">
             <span class="checkbox">
               <i class="bi bi-check check-icon"></i>
@@ -42,16 +42,37 @@
       return {
         selectedCategory: [],
         selectedSemester: [],
-        categories: ["Course Files", "Meeting", "Workshop", "Others"], 
-        semesters: ["2022/2023-1", "2022/2023-2", "2023/2024-1", "2023/2024-2","2024/2025-1"],   
+        categories: ["Course Files", "Meeting", "Workshop"], 
+        semesters: ["2022/2023-1", "2022/2023-2", "2023/2024-1", "2023/2024-2","2024/2025-1"], 
+        dropdowns: {
+          category: false,
+          semester: false,
+        },  
       };
     },
 
+    mounted() {
+      document.addEventListener('click', this.handleClickOutside);
+    },
+
+    beforeUnmount() {
+      document.removeEventListener('click', this.handleClickOutside);
+    },
+
     methods:{
-      selectButton(id){
-        const btn = document.querySelector(id);
-        const listItem = btn.querySelector('.list-items')
-        listItem.classList.toggle("open");
+      toggleDropdown(type) {
+        this.dropdowns[type] = !this.dropdowns[type];
+      },
+
+      handleClickOutside(event) {
+        if (
+          !event.target.closest('#btn-category') &&
+          !event.target.closest('#btn-semester')
+        ) {
+          // Close all dropdowns if clicked outside
+          this.dropdowns.category = false;
+          this.dropdowns.semester = false;
+        }
       },
 
       selectCheck(selectedItem,word,item,index){
@@ -105,10 +126,6 @@
     padding: 14px 0px;
     background-color: #fff;
     border: 2px solid #D3D3D3;
-    display: none;
-  }
-
-  .list-items.open{
     display: block;
   }
 

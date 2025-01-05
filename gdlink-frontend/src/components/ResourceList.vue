@@ -1,13 +1,14 @@
 <template>
   <div class="container">
     <div class="grid-layout">
-        <div style="width: 180px;" v-for="(resource, index) in resources" :key="index"> 
+        <div box-width="180px" v-for="(resource, index) in resources" :key="index"> 
           <ResourceBox 
-          @click="viewDetails(resource.resource_id, resource.resource_type)"
-          :category_color="resource.color"
-          :ref_name="resource.ref_name"
+          @click="viewDetails(resource.resourceId, resource.resourceType)"
+          :categoryColor="resource.color"
+          :refName="resource.refName"
           :description="resource.description"
-          :resource_type="resource.resource_type" 
+          :sessem="resource.sessem"
+          :categoryName="resource.categoryName"
         />
       </div>
     </div>
@@ -28,11 +29,11 @@
       },
     },
     methods:{
-      async viewDetails(id,type){
-        if(type){
-          this.$emit("viewDetails",id,type);
+      async viewDetails(resourceId,resourceType){
+        if(resourceType){
+          this.$emit("viewDetails",resourceId,resourceType);
         }else{
-          this.$emit("viewDetails", id);
+          this.$emit("viewDetails",resourceId);
         }
       },
     }
@@ -40,30 +41,42 @@
   </script>
   
 <style scope>
+:root{
+  --box-width: 170px;
+}
+.container{
+  display:flex;
+  justify-content: center;
+}
 
 .grid-layout {
     display: grid;
-    grid-column-gap: 20px;
-    grid-row-gap: 20px;
-    margin: 0 0 20px 0;
-    padding: 0 1px;
+    grid-template-columns: repeat(1, var(--box-width));
+    grid-column-gap: 23px;
+    grid-row-gap: 23px;
 }
 
-@media (min-width: 576px) {
+@media (min-width: 708px) {
     .grid-layout {
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(2, var(--box-width));
     }
 }
 
-@media (min-width: 980px) {
+@media (min-width: 900px) {
     .grid-layout {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(3, var(--box-width));
     }
 }
 
-@media (min-width: 1047px) {
+@media (min-width: 1095px) {
     .grid-layout {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 180px));
+        grid-template-columns: repeat(4, var(--box-width));
+    }
+}
+
+@media (min-width: 1400px) {
+    .grid-layout {
+        grid-template-columns: repeat(6, var(--box-width));
     }
 }
 </style>

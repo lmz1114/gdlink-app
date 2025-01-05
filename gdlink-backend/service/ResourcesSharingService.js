@@ -2,29 +2,44 @@
 const UserDAO = require('../DAO/UserDAO');
 const ResourcesSharingDAO = require('../DAO/ResourcesSharingDAO');
 const FavouriteDAO = require('../DAO/FavouriteDAO');
+const GroupMemberDAO = require('../DAO/GroupMemberDAO');
 
 const ResourceSharingService = {
-    async shareResource(sharer_id, resource) {
-        const { shareTo } = resource;
-        console.log(shareTo);
+
+    async getReceiversToShare(shareTo, sharerId, receiverGroups, resource) {
         let receivers;
+        switch (shareTo) {
+            case "all":
+                receivers = await UserDAO.getAllUsers(sharerId);
+                break;
+            case "lecturers":
+                receivers = await UserDAO.getAllLecturer(sharerId);
+                break;
+            case "students":
+                receivers = await UserDAO.getAllStudent(sharerId);
+                break;
+            case "specific groups":
+                let rawReceivers = [];
+                for (let groupId of receiverGroups) {
+                    const groupMembers = await GroupMemberDAO.getMembersIdByGroup(groupId);
+                    rawReceivers = [...rawReceivers, ...groupMembers];
+                }
+                receivers = rawReceivers.filter((value, index, self) =>
+                    index === self.findIndex((t) => t.userId === value.userId)
+                );
+                break;
+            default:
+                receivers = resource.receivers;
+        }
+        return receivers;
+    },
     
+    async shareResource(sharerId, resource) {
+        const { shareTo, receiverGroups } = resource;
+        let receivers;
         try {
-            switch (shareTo) {
-                case "all":
-                    receivers = await UserDAO.getAllUsers(sharer_id);
-                    break;
-                case "lecturers":  
-                    receivers = await UserDAO.getAllLecturer(sharer_id);
-                    break;
-                case "students":
-                    receivers = await UserDAO.getAllStudent(sharer_id);
-                    break;
-                default:
-                    receivers = resource.receiver;
-            }
-            console.log(receivers);
-            return await ResourcesSharingDAO.shareResource(sharer_id, resource, receivers);
+            receivers = await this.getReceiversToShare(shareTo, sharerId, receiverGroups, resource);
+            return await ResourcesSharingDAO.shareResource(sharerId, resource, receivers);
     
         } catch (error) {
             console.error('Service Error:', error);
@@ -35,10 +50,78 @@ const ResourceSharingService = {
             };
         }
     },   
+
+    async editResource(sharerId, resourceId, previousShareTo, previousReceiverGroups, previousReceivers, resource) {
+        const { shareTo, receiverGroups, receivers } = resource;
+        console.log(previousReceiverGroups.length);
+        console.log(previousReceivers);
+        console.log(receiverGroups.length);
     
-    async getMyShareLinksResources(sharer_id){
+        try {
+            let usersToAdd = [];
+            const isGroupSame = (arr1, arr2) => {
+                if (arr1.length !== arr2.length) return false;
+                const sorted1 = [...arr1].sort();
+                const sorted2 = [...arr2].sort();
+                return sorted1.every((value, index) => value === sorted2[index]);
+            };
+
+            const isReceiverSame = (arr1, arr2) => {
+                if (arr1.length !== arr2.length) return false;
+                const sorted1 = arr1.map(obj => obj.userId).sort();
+                const sorted2 = arr2.map(obj => obj.userId).sort();
+                return sorted1.every((value, index) => value === sorted2[index]);
+            };   
+            const isShareToSame = (previousShareTo === shareTo);
+            const isReceiverGroupsSame = isGroupSame(previousReceiverGroups,receiverGroups);
+            const isReceiversSame = isReceiverSame(previousReceivers,receivers);
+            console.log(isReceiversSame);
+
+            if(!isShareToSame || !isReceiverGroupsSame || !isReceiversSame ){
+                let currentReceivers = await ResourcesSharingDAO.getReceiverIds(resourceId);
+        
+                let newReceivers = await this.getReceiversToShare(shareTo, sharerId, receiverGroups, resource);
+        
+                const usersToRemove = currentReceivers.filter(currentReceiver => 
+                    !newReceivers.some(newReceiver => newReceiver.userId === currentReceiver.userId)
+                );
+        
+                const userIdsToRemove = usersToRemove.map(receiver => receiver.userId);
+                if (userIdsToRemove.length > 0) {
+                    await ResourcesSharingDAO.deleteSharesWithIN(resourceId, userIdsToRemove);
+                }
+        
+                usersToAdd = newReceivers.filter(newReceiver => 
+                    !currentReceivers.some(currentReceiver => currentReceiver.userId === newReceiver.userId)
+                    );
+            }
+            return await ResourcesSharingDAO.editResource(resourceId, resource, isReceiverGroupsSame,previousReceiverGroups, usersToAdd);
+        } catch (error) {
+            console.error('Error updating resource sharing:', error);
+    
+            return {
+                error: true,
+                message: 'An error occurred while updating the resource sharing. Please try again later.'
+            };
+        }
+    },
+
+    async deleteResource(resourceId) {
+        try {
+            return await ResourcesSharingDAO.deleteResource(resourceId);
+        } catch (error) {
+            console.error('Service Error:', error);
+            throw new Error('Failed to delete resource. Please try again later.');
+            // return {
+            //     error: true,
+            //     message: 'An error occurred while deleting the resource. Please try again later.'
+            // };
+        }
+    },
+    
+    async getMyShareLinksResources(sharerId){
         try{
-            return await ResourcesSharingDAO.getMyShareLinksResources(sharer_id);
+            return await ResourcesSharingDAO.getMyShareLinksResources(sharerId);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -49,9 +132,9 @@ const ResourceSharingService = {
         }
     },
 
-    async getSharedWithMeResources(receiver_id){
+    async getSharedWithMeResources(receiverId){
         try{
-            return await ResourcesSharingDAO.getSharedWithMeResources(receiver_id);
+            return await ResourcesSharingDAO.getSharedWithMeResources(receiverId);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -62,9 +145,9 @@ const ResourceSharingService = {
         }
     },
 
-    async getFilteredResources(user_id,user_id_type,categories,semesters){
+    async getFilteredResources(userId,userIdType,categories,semesters){
         try{
-            return await ResourcesSharingDAO.getFilteredResources(user_id,user_id_type,categories,semesters);
+            return await ResourcesSharingDAO.getFilteredResources(userId,userIdType,categories,semesters);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -75,9 +158,9 @@ const ResourceSharingService = {
         }
     },
 
-    async getSearchedResources(user_id,user_id_type,key){
+    async getSearchedResources(userId,userIdType,key){
         try{
-            return await ResourcesSharingDAO.getSearchedResources(user_id,user_id_type,key);
+            return await ResourcesSharingDAO.getSearchedResources(userId,userIdType,key);
         } catch (error) {
             console.error('Service Error:', error);
     
@@ -88,13 +171,49 @@ const ResourceSharingService = {
         }
     },
 
-    async getResourceDetails(resource_id,receiver_id = null){
+    async getResourceDetails(resourceId,receiverId = null){
         try{
-            await ResourcesSharingDAO.updateAccessTime(resource_id, receiver_id);
-            const resourceDetails = await ResourcesSharingDAO.getResourceDetails(resource_id, receiver_id);
-            if(receiver_id){
-                const isFavouriteStatus = await FavouriteDAO.isFavourite(receiver_id, resource_id);
+            await ResourcesSharingDAO.updateAccessTime(resourceId, receiverId);
+            let resourceDetails = await ResourcesSharingDAO.getResourceDetails(resourceId, receiverId);
+            if(receiverId){
+                const isFavouriteStatus = await FavouriteDAO.isFavourite(receiverId, resourceId);
                 resourceDetails[0].isFavourite = isFavouriteStatus;
+            }else{
+                resourceDetails = [resourceDetails.reduce((result, item) => {
+                    if (!result.resourceId) {
+                        result = {
+                            resourceId: item.resourceId,
+                            link: item.link,
+                            description: item.description,
+                            refName: item.refName,
+                            sessem: item.sessem,
+                            owner: item.owner,
+                            sharedAt: item.sharedAt,
+                            shareTo: item.shareTo,
+                            categoryId: item.categoryId,
+                            categoryName: item.categoryName,
+                            color: item.color,
+                            groups: [],
+                            receivers: []
+                        };
+                    }
+        
+                    if (item.groupId && item.groupName) {
+                        result.groups.push({
+                            groupId: item.groupId,
+                            groupName: item.groupName
+                        });
+                    }
+        
+                    if (item.receiverId && item.receiverName) {
+                        result.receivers.push({
+                            receiverId: item.receiverId,
+                            receiverName: item.receiverName
+                        });
+                    }
+        
+                    return result;
+                }, {})];
             }
             return resourceDetails;
         } catch (error) {

@@ -1,10 +1,10 @@
 const ResourcesSharingDAO = require('../DAO/ResourcesSharingDAO');
 
 const HomeService = {
-    async getChartData(user_id){
+    async getChartData(userId){
         try{
-            const myShareLinks = await ResourcesSharingDAO.getChartData(user_id,'sharer_id');
-            const sharedWithMe = await ResourcesSharingDAO.getChartData(user_id,'receiver_id');
+            const myShareLinks = await ResourcesSharingDAO.getChartData(userId,'sharer_id');
+            const sharedWithMe = await ResourcesSharingDAO.getChartData(userId,'receiver_id');
 
             return { myShareLinks, sharedWithMe };
         } catch (error) {
@@ -17,9 +17,9 @@ const HomeService = {
         }
     },
 
-    async getRecentAccessResources(user_id){
+    async getRecentAccessResources(userId){
         try{
-            return await ResourcesSharingDAO.getRecentAccessResources(user_id);
+            return await ResourcesSharingDAO.getRecentAccessResources(userId);
         } catch (error) {
             console.error('Service Error:', error);
     

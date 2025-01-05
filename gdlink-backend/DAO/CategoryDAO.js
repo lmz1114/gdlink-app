@@ -1,12 +1,13 @@
 const { getConnection } = require('../db');
+const {snakeToCamel} = require('../tools/camelTransform');
 
 const CategoryDAO = {
     async getCategoryList(){
         const conn = await getConnection();
         try{
             const query = 'SELECT * FROM CATEGORY';
-            const rows = conn.query(query);
-            return rows;
+            const rows = await conn.query(query);
+            return rows.map(snakeToCamel);
         }catch(error){
             console.error('Error occurred while retrieving categories:', error);
             return {

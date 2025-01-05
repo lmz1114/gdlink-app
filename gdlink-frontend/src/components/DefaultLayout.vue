@@ -42,7 +42,7 @@
 
     .bg-grey{
       background-color: #EDEBEB; 
-    color: inherit;  
+      color: inherit;  
     }
   </style>
   

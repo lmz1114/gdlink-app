@@ -13,14 +13,18 @@
 
             <div class="d-flex">
               <div class="border rounded shadow-sm bg-white w-25 vh-100 p-4 me-4 d-flex flex-column justify-content-center align-items-center">
-                <div>
+                <div class="d-flex justify-content-center align-items-center">
                   <img v-if="!user || !user.picture" src="../assets/defaultPicture.jpg" class="rounded-circle profile-image mb-3" alt="profile image" >
                   <img v-else :src="imageUrl" class="rounded-circle profile-image mb-3" alt="default profile image">
                 </div>
+                <div class="d-flex flex-row justify-content-center align-items-center w-100" style="position: relative">
                   <button class="btn btn-primary w-50" type="button" data-bs-toggle="modal" data-bs-target="#uploadModalDiv">
                     Edit Picture
                   </button>
-                  <ProfilePictureUploadForm/>
+                  <i class="bi bi-trash3" @click="deletePicture"></i>
+                </div>
+                  
+                  <ProfilePictureUploadForm  @refresh="getProfileData"/>
               </div>
 
               <div class = "d-flex flex-column w-75">
@@ -32,7 +36,7 @@
                   </div>
                   <div class="d-flex">
                     <p class="profile-text"><strong>Matric No</strong></p>
-                    <span><strong v-if="user">{{ user.user_id }}</strong></span>
+                    <span><strong v-if="user">{{ user.userId }}</strong></span>
                   </div>
                   <div class="d-flex">
                     <p class="profile-text"><strong>Email</strong></p>
@@ -41,7 +45,7 @@
                   <button class="btn btn-primary w-25 float-end mt-4" type="button" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                     Change Password
                   </button>
-                  <ChangePasswordForm v-if="user" :is-default-password="!!user.is_pass_changed"/>
+                  <ChangePasswordForm v-if="user" :is-default-password="!!user.isPassChanged"/>
                 </div>
 
                 <div class="border rounded shadow-sm bg-white h-50 p-4">
@@ -59,8 +63,8 @@
 import DefaultLayout from '../components/DefaultLayout.vue';
 import ProfilePictureUploadForm from '../components/ProfilePictureUploadForm.vue';
 import ChangePasswordForm from '../components/ChangePasswordForm.vue';
-import axios from 'axios';
-
+import ProfileService from '@/service/ProfileService';
+import SweetAlert from '../Utils/SweetAlertUtils'
 
 export default {
     data(){
@@ -73,7 +77,7 @@ export default {
     components: {
       DefaultLayout,
       ProfilePictureUploadForm,
-      ChangePasswordForm
+      ChangePasswordForm,
     },
     created() {
       const sessionData = sessionStorage.getItem('utmwebfc_session');
@@ -86,19 +90,23 @@ export default {
     methods:{
       async getProfileData(){
         try {
-          const response = await axios.get(`http://localhost:8081/profile/${this.userId}`);
-          console.log(response);
-          console.log(response.data);
-          const {user} = response.data;
-          this.user = user[0];
+          const data = await ProfileService.getUserData(this.userId);
+          this.user = data[0];
           if(this.user.picture){
-            this.imageUrl = `http://localhost:8081/profile/images/${this.user.picture}`;
-            console.log(this.imageUrl);
+            this.imageUrl = ProfileService.getPictureUrl(this.user);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
         }
       },
+      async deletePicture(){
+          await SweetAlert.handleDeletion({
+            confirmText: 'This action will permanently delete the picture.',
+            successText: 'The picture has been deleted.',
+            deleteAction: () => ProfileService.deletePicture(this.userId),
+            refreshData: () => this.getProfileData(),
+          });
+      }
     }
 };
 </script>
@@ -117,14 +125,19 @@ export default {
 
   .profile-image{
     border: 1px solid #000;
-    width:95%;  
-    height: auto; 
-    aspect-ratio: 1 / 1;
-    object-fit: contain;
+    width: 200px;
+    height: 200px;
   }
 
   .profile-text{
     margin-right: 100px;
     width: 100px;
+  }
+
+  .bi-trash3{
+    color: red;
+    position:absolute;
+    right:30px;
+    cursor: pointer;
   }
 </style>

@@ -1,7 +1,45 @@
 const { getConnection } = require('../db');
+const {snakeToCamel} = require('../tools/camelTransform');
 
 const ResourceSharingDAO = {
-    async getChartData(user_id,user_id_type){
+
+    async getReceiverIds(resourceId) {
+        const conn = await getConnection();
+        try {
+            const query = `SELECT receiver_id AS user_id FROM sharing WHERE resource_id = ?;`;
+            const rows = await conn.query(query, [resourceId]);
+            return rows.map(snakeToCamel);
+           
+        } catch (error) {
+            console.error('DAO Error', error);
+            return {
+                error: true,
+                message: 'An error occurred while retrieving receiver.',
+            };
+        } finally {
+            if (conn) conn.release();
+        }
+    },
+
+    async deleteSharesWithIN(resourceId, userIdsToRemove) {
+        const conn = await getConnection();
+        try {
+            const query = `DELETE FROM sharing WHERE resource_id = ? AND receiver_id IN (?)`;
+            const affectedRows = await conn.query(query, [resourceId,userIdsToRemove]);
+            console.log(affectedRows);
+        } catch (error) {
+            console.error('DAO Error', error);
+            return {
+                error: true,
+                message: 'An error occurred while deleting receiver.',
+            };
+        } finally {
+            if (conn) conn.release();
+        }
+    },
+
+
+    async getChartData(userId,userIdType){
         const conn = await getConnection();
         try {
             let query = `SELECT 
@@ -14,13 +52,15 @@ const ResourceSharingDAO = {
                                 category 
                             ON 
                                 resources.category_id = category.category_id`;
-            if(user_id_type === 'receiver_id'){
+            if(userIdType === 'receiver_id'){
                 query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id`
             }
-            query += ` WHERE ${user_id_type} = ? GROUP BY category_name;`;
-            rows = await conn.query(query,[user_id]);
+            query += ` WHERE ${userIdType} = ? GROUP BY category_name;`;
+            let rows = await conn.query(query,[userId]);
+            rows = rows.map(snakeToCamel);
+            console.log(rows);
             const updatedRows = rows.map(row => {
-                row.category_count = Number(row.category_count);
+                row.categoryCount = Number(row.categoryCount);
                 return row;
             });
             return updatedRows;
@@ -35,23 +75,29 @@ const ResourceSharingDAO = {
         }
     },
 
-    async shareResource(sharer_id, resource, receivers) {
+    async shareResource(sharerId, resource, receivers) {
         const conn = await getConnection();
         try {
-            const { category_id, refName, session, semester, description, owner, link } = resource;
+            const { categoryId, refName, session, semester, description, owner, link, shareTo, receiverGroups } = resource;
             const sessem = session + '-' + semester;
     
-            const query = 'INSERT INTO resources (category_id, ref_name, sessem, description, owner, link, sharer_id) VALUES (?,?,?,?,?,?,?)';
-            const result = await conn.query(query, [category_id, refName, sessem, description, owner, link, sharer_id]);
+            const query = 'INSERT INTO resources (category_id, ref_name, sessem, description, owner, link, share_to, sharer_id) VALUES (?,?,?,?,?,?,?,?)';
+            const result = await conn.query(query, [categoryId, refName, sessem, description, owner, link, shareTo, sharerId]);
     
-            const resource_id = Number(result.insertId);
+            const resourceId = Number(result.insertId);
+            if(receiverGroups){
+                const groupShareQuery = 'INSERT INTO group_sharing (group_id, resource_id) VALUES (?,?);';
+                for(let groupId of receiverGroups){
+                    await conn.query(groupShareQuery, [groupId, resourceId]);
+                }
+            }
             const sharingQuery = `INSERT INTO sharing (receiver_id, resource_id) VALUES (?,?);`;
-            for(let index in receivers){
-                await conn.query(sharingQuery, [receivers[index].user_id,resource_id]);
+            for(let receiver of receivers){
+                await conn.query(sharingQuery, [receiver.userId,resourceId]);
             }
     
             return {
-                resource_id: resource_id
+                resourceId: resourceId
             };
         } catch (error) {
             console.error('Error occurred while sharing resource:', error);
@@ -64,11 +110,84 @@ const ResourceSharingDAO = {
         }
     },
 
-    async getRecentAccessResources(user_id){
+    async editResource(resourceId, resource, isReceiverGroupsSame, previousReceiverGroups, usersToAdd){
+        const conn = await getConnection();
+        try {
+            const { categoryId, refName, session, semester, description, owner, link, shareTo, receiverGroups } = resource;
+            const sessem = session + '-' + semester;
+    
+            const query = `UPDATE resources
+                            SET 
+                                category_id = ?, 
+                                ref_name = ?, 
+                                sessem = ?, 
+                                description = ?, 
+                                owner = ?, 
+                                link = ?, 
+                                shared_at = NOW(), 
+                                share_to = ?
+                            WHERE resource_id = ?;`;
+            const result = await conn.query(query, [categoryId, refName, sessem, description, owner, link, shareTo, resourceId]);
+
+            if (!isReceiverGroupsSame) {
+                if(previousReceiverGroups.length > 0){
+                    const deletePreviousGroupShareQuery2 = 'DELETE FROM group_sharing WHERE resource_id = ? AND group_id IN (?);';
+                    await conn.query(deletePreviousGroupShareQuery2, [resourceId, previousReceiverGroups]);
+                }
+                const groupShareQuery = 'INSERT INTO group_sharing (group_id, resource_id) VALUES (?,?);';
+                for (let groupId of receiverGroups) {
+                    await conn.query(groupShareQuery, [groupId, resourceId]);
+                }
+            }
+
+            const sharingQuery = `INSERT INTO sharing (receiver_id, resource_id) VALUES (?,?);`;
+            console.log(usersToAdd);
+            for(let receiver of usersToAdd){
+                await conn.query(sharingQuery, [receiver.userId,resourceId]);
+            }
+    
+            return {
+                resourceId: resourceId
+            };
+        } catch (error) {
+            console.error('Error occurred while editing resource:', error);
+            return {
+                error: true,
+                message: 'An error occurred while editing the resource. Please try again later.',
+            };
+        } finally {
+            conn.release(); 
+        }
+    },
+
+    async deleteResource(resourceId) {
+        const conn = await getConnection();
+        try {
+            const query = `DELETE FROM resources WHERE resource_id = ?;`;
+            const result = await conn.query(query, [resourceId]);
+            if (result.affectedRows > 0) {
+                return { success: true, message: 'Resource deleted successfully' };
+            } else {
+                return { success: false, message: 'Resource not found' };
+            }
+        } catch (error) {
+            console.error('DAO Error', error);
+            return {
+                error: true,
+                message: 'An error occurred while deleting the resource.',
+            };
+        } finally {
+            if (conn) conn.release();
+        }
+    },
+
+    async getRecentAccessResources(userId){
         const conn = await getConnection();
         try {
                const query = `SELECT sharing.latest_access_time, 
-                                    resources.resource_id, 
+                                    resources.resource_id,
+                                    resources.sessem,
+                                    category.category_name, 
                                     category.color, 
                                     resources.description, 
                                     resources.ref_name, 
@@ -80,8 +199,10 @@ const ResourceSharingDAO = {
                                 AND sharing.latest_access_time >= CURDATE() - INTERVAL 7 DAY
                                 UNION 
                                 SELECT resources.latest_access_time, 
-                                    resources.resource_id, 
-                                    category.color, 
+                                    resources.resource_id,
+                                    resources.sessem,
+                                    category.category_name, 
+                                    category.color,  
                                     resources.description, 
                                     resources.ref_name, 
                                     'share' AS resource_type
@@ -90,8 +211,8 @@ const ResourceSharingDAO = {
                                 WHERE sharer_id = ? 
                                 AND resources.latest_access_time >= CURDATE() - INTERVAL 7 DAY
                                 ORDER BY latest_access_time DESC;`;
-                rows = await conn.query(query,[user_id,user_id]);
-                return rows;
+                rows = await conn.query(query,[userId,userId]);
+                return rows.map(snakeToCamel);
             } catch (error) {
                 console.error('Error occurred while retrieving resources:', error);
                 return {
@@ -104,14 +225,15 @@ const ResourceSharingDAO = {
         },
 
     
-    async getMyShareLinksResources(sharer_id){
+    async getMyShareLinksResources(sharerId){
         const conn = await getConnection();
         try {
-            const query = `SELECT resources.resource_id,category.color,
+            const query = `SELECT resources.resource_id,resources.sessem,
+                                    category.category_name, category.color,
                             resources.description,resources.ref_name 
                             FROM resources INNER JOIN category ON resources.category_id = category.category_id WHERE sharer_id = ? ORDER BY shared_at DESC;`;
-            rows = await conn.query(query,[sharer_id]);
-            return rows;
+            rows = await conn.query(query,[sharerId]);
+            return rows.map(snakeToCamel);
         } catch (error) {
             console.error('Error occurred while retrieving resources:', error);
             return {
@@ -123,15 +245,16 @@ const ResourceSharingDAO = {
         }
     },
 
-    async getSharedWithMeResources(receiver_id){
+    async getSharedWithMeResources(receiverId){
         const conn = await getConnection();
         try {
-            const query = `SELECT resources.resource_id,category.color,
+            const query = `SELECT resources.resource_id,resources.sessem,
+                                    category.category_name, category.color,
                             resources.description,resources.ref_name 
                             FROM resources INNER JOIN sharing ON resources.resource_id = sharing.resource_id
                             INNER JOIN category ON resources.category_id = category.category_id WHERE receiver_id = ? ORDER BY resources.shared_at DESC;`;
-            rows = await conn.query(query,[receiver_id]);
-            return rows;
+            rows = await conn.query(query,[receiverId]);
+            return rows.map(snakeToCamel);
         } catch (error) {
             console.error('Error occurred while retrieving resources:', error);
             return {
@@ -143,20 +266,21 @@ const ResourceSharingDAO = {
         }
     },
 
-    async getFilteredResources(user_id,user_id_type,categories,semesters){
+    async getFilteredResources(userId,userIdType,categories,semesters){
         const conn = await getConnection();
         try {
-            let query = `SELECT resources.resource_id,category.color,
+            let query = `SELECT resources.resource_id,resources.sessem,
+                            category.category_name, category.color, 
                             resources.description,resources.ref_name 
                             FROM resources`;
-            let queryParams = [user_id];
+            let queryParams = [userId];
 
-            if (user_id_type === 'receiver_id') {
+            if (userIdType === 'receiver_id') {
                 query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id`;
             }
     
             query += ` INNER JOIN category ON resources.category_id = category.category_id
-                       WHERE ${user_id_type} = ?`;
+                       WHERE ${userIdType} = ?`;
     
             if (categories && categories.length > 0) {
                 query += ' AND category.category_name IN (?)';
@@ -171,8 +295,7 @@ const ResourceSharingDAO = {
             query += ' ORDER BY shared_at DESC;'
     
             const rows = await conn.query(query, queryParams);
-            console.log(rows);
-            return rows;
+            return rows.map(snakeToCamel);
         } catch (error) {
             console.error('Error fetching filtered resources:', error);
             throw error; 
@@ -181,11 +304,13 @@ const ResourceSharingDAO = {
         }
     },
 
-    async getSearchedResources(user_id,user_id_type,key){
+    async getSearchedResources(userId,userIdType,key){
         const conn = await getConnection();
         try {
             let query = `SELECT 
                             resources.resource_id,
+                            resources.sessem,
+                            category.category_name, 
                             category.color,
                             resources.description,
                             resources.ref_name,
@@ -193,20 +318,19 @@ const ResourceSharingDAO = {
                         FROM 
                             resources`;
 
-            if (user_id_type === 'receiver_id') {
+            if (userIdType === 'receiver_id') {
                 query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id`;
             }
     
             query += ` INNER JOIN category ON resources.category_id = category.category_id
                         WHERE 
-                            ${user_id_type} = ? 
+                            ${userIdType} = ? 
                             AND MATCH(resources.ref_name, resources.description) AGAINST(?)
                         ORDER BY 
                             relevance DESC;`;
     
-            const rows = await conn.query(query, [key,user_id,key]);
-            console.log(rows);
-            return rows;
+            const rows = await conn.query(query, [key,userId,key]);
+            return rows.map(snakeToCamel);;
         } catch (error) {
             console.error('Error fetching filtered resources:', error);
             throw error; 
@@ -215,13 +339,13 @@ const ResourceSharingDAO = {
         }
     },
 
-    async getResourceDetails(resource_id, receiver_id = null) {
+    async getResourceDetails(resourceId, receiverId = null) {
         const conn = await getConnection();
         try {
             let query;
-            let queryParams = [resource_id];
+            let queryParams = [resourceId];
     
-            if (receiver_id) {
+            if (receiverId) {
                 query = `SELECT
                             resources.resource_id,
                             resources.link, 
@@ -242,7 +366,7 @@ const ResourceSharingDAO = {
                             sharing ON resources.resource_id = sharing.resource_id
                         WHERE 
                             resources.resource_id = ? AND sharing.receiver_id = ?`;
-                queryParams.push(receiver_id);
+                queryParams.push(receiverId);
             } else {
                 query = `SELECT
                             resources.resource_id,
@@ -250,22 +374,39 @@ const ResourceSharingDAO = {
                             resources.description,
                             resources.ref_name,
                             resources.sessem,
-                            resources.owner,  
+                            resources.owner, 
+                            resources.share_to, 
                             DATE_FORMAT(resources.shared_at, '%d/%m/%Y %r') AS shared_at,
+                            category.category_id,
                             category.category_name,
-                            category.color
+                            category.color,
+                            groups.group_id,
+                            groups.group_name,  
+                            sharing.receiver_id,
+                            receiver.name AS receiver_name  
                         FROM 
                             resources
                         INNER JOIN 
                             users ON resources.sharer_id = users.user_id
                         INNER JOIN
                             category ON category.category_id = resources.category_id
+                        LEFT JOIN
+                            group_sharing ON resources.resource_id = group_sharing.resource_id
+                            AND resources.share_to = 'specific groups'  
+                        LEFT JOIN
+                            groups ON group_sharing.group_id = groups.group_id  
+                        LEFT JOIN
+                            sharing ON resources.resource_id = sharing.resource_id
+                            AND resources.share_to = 'specific users'  
+                        LEFT JOIN
+                            users AS receiver ON sharing.receiver_id = receiver.user_id  
                         WHERE 
-                            resources.resource_id = ?`;
+                            resources.resource_id = ?;`;
             }
     
             const rows = await conn.query(query, queryParams);
-            return rows;
+            
+            return rows.map(snakeToCamel);
         } catch (error) {
             console.error('Error occurred while retrieving resources:', error);
             return {
@@ -277,16 +418,16 @@ const ResourceSharingDAO = {
         }
     },
 
-    async updateAccessTime(resource_id, receiver_id = null) {
+    async updateAccessTime(resourceId, receiverId = null) {
         const conn = await getConnection();
         try {
             const accessTime = new Date();
-            if(receiver_id){
+            if(receiverId){
                 const receiverQuery = `UPDATE sharing SET latest_access_time = ? WHERE resource_id = ? AND receiver_id = ?`;
-                await conn.query(receiverQuery, [accessTime, resource_id, receiver_id]);
+                await conn.query(receiverQuery, [accessTime, resourceId, receiverId]);
             }else{
                 const query = `UPDATE resources SET latest_access_time = ? WHERE resource_id = ?`;
-                await conn.query(query, [accessTime, resource_id, receiver_id]);
+                await conn.query(query, [accessTime, resourceId, receiverId]);
             }
         } catch (error) {
             console.error('Error occurred while updating access time:', error);
@@ -294,9 +435,6 @@ const ResourceSharingDAO = {
             conn.release();
         }
     }
-    
-    
-    
 } 
 
 module.exports = ResourceSharingDAO;

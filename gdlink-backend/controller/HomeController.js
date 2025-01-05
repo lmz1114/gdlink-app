@@ -3,9 +3,9 @@ const HomeService = require('../service/HomeService');
 
 const HomeController = {
     async getChartData(req,res){
-        const user_id = req.params.user_id;
+        const userId = req.params.userId;
         try{
-            const data = await HomeService.getChartData(user_id);
+            const data = await HomeService.getChartData(userId);
             return res.json(data);
         } catch (error) {
             console.error('Controller Error:', error.message); 
@@ -17,9 +17,9 @@ const HomeController = {
     },
 
     async getRecentAccessResources(req,res){
-        const user_id = req.params.user_id;
+        const userId = req.params.userId;
         try{
-            const data = await HomeService.getRecentAccessResources(user_id);
+            const data = await HomeService.getRecentAccessResources(userId);
             return res.json(data);
         } catch (error) {
             console.error('Controller Error:', error.message); 
