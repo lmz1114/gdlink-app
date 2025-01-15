@@ -64,13 +64,14 @@ import GroupService from '../service/GroupService';
 import DefaultLayout from '../components/DefaultLayout.vue';
 import GroupForm from '../components/GroupForm.vue';
 import MemberModal from '../components/MemberModal.vue';
+import GroupMemberService from '../service/GroupMemberService';
 import Swal from 'sweetalert2';
 
 export default {
   data() {
       return {
         userId: null,
-        groups: []        
+        groups: []       
       };
     },
   components: {
@@ -90,6 +91,9 @@ export default {
         async displayGroupList(){
             this.groups = await GroupService.getGroupList(this.userId);
             console.log(this.groups);
+        },
+        async displayMemberList(groupId){
+            this.groupMembers = await GroupMemberService.getMemberList(groupId);
         },
         openEditModal(group){
             this.$refs.groupForm.openModalForEdit(group);

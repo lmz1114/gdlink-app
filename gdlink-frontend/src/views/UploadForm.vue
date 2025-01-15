@@ -79,7 +79,7 @@
             id="session"
             v-model="resource.session"
             class="form-select"
-            required
+            disabled
           >
             <option value="" disabled>Select Session</option>
             <option value="2024/2025">2024/2025</option>
@@ -88,14 +88,13 @@
           </select>
         </div>
   
-        <!-- Semester Dropdown -->
         <div class="mb-3">
           <label for="semester" class="form-label">Semester:</label>
           <select
             id="semester"
             v-model="resource.semester"
             class="form-select"
-            required
+            disabled
           >
             <option value="" disabled>Select Semester</option>
             <option value="1">1</option>
@@ -194,8 +193,8 @@
           owner: "",
           refName: "",
           description: "",
-          session: "",
-          semester: "",
+          session: "2024/2025",
+          semester: "1",
           shareTo: "",
           receiverGroups: [],
           receivers: [{
@@ -254,14 +253,13 @@
           category_id: "",
           refName: "",
           description: "",
-          session: "",
-          semester: "",
+          session: "2024/2025",
+          semester: "1",
           shareTo: "",
           receivers: [
             { userId: '' } 
           ]
         };
-        this.$router.push('/');
       },
       handleShareChange() {
       if (this.resource.shareTo !== "specific users") {
@@ -286,14 +284,17 @@
         if(this.view === 'edit'){
           const response1 = await ResourcesSharingService.editResource(this.userId,this.resourceId,this.previousShareTo,this.previousReceiverGroups,this.previousReceivers,this.resource);
           console.log(response1);
+          this.cancelUpload();
+          this.previousShareTo = '';
+          this.previousReceiverGroups = [];
+          this.previousReceivers = [];
+          this.$router.push({ name: 'My ShareLinks Resource Details', params: { resourceId: this.resourceId } });
         }else{
           const response2 = await ResourcesSharingService.shareResource(this.userId,this.resource);
           console.log(response2);
+          this.cancelUpload();
+          this.$router.push('/my_sharelinks');
         }
-        this.cancelUpload();
-        this.previousShareTo = '';
-        this.previousReceiverGroups = [];
-        this.previousReceivers = [];
       },
       async getGroupData(){
           this.groups = await GroupService.getGroupList(this.userId);

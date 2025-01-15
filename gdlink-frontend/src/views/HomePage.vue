@@ -16,6 +16,7 @@
         <RecentAccessResources 
           @viewDetails = "viewDetails"
           :resources="recentAccessResources"
+          :displayType="'card'"
         />
       </div>
     </template>

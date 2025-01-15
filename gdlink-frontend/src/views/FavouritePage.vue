@@ -20,6 +20,7 @@
                 <FavouriteResources 
                   :resources="favouriteResources" 
                   @viewDetails = "viewDetails"
+                  :displayType = "'card'"
                 />
               </div>
         </template>

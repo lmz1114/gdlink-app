@@ -15,7 +15,7 @@
       <hr>
       
       <div>
-        <SideBarTab :items="navItems"/>
+        <SideBarTab :items="filteredNavItems"/>
       </div>
 
       <div class="d-flex justify-content-center align-items-end vh-100">
@@ -71,11 +71,13 @@ import SideBarTab from './SideBarTab.vue';
           { name: 'Favourites', link: '/favourites', icon: 'favourites' },
           { name: 'Notification', link: '/notification', icon: 'notification' },
           { name: 'Group', link: '/groups', icon: 'group' },
+          { name: 'Resource Management', link: '/admin/AllResources', icon: 'mysharelinks' , role: 'Admin'},
       ]
 
 
       return {
         userSession: null,
+        role: null,
         navItems,
       };
     },
@@ -92,15 +94,20 @@ import SideBarTab from './SideBarTab.vue';
     },
     computed: {
       filteredNavItems() {
-        const role = "<%= userSession.description %>";
-        return this.navItems.filter(item => item.name !== 'Shared with me' || role!=='Pensyarah');
+        if(this.role !== 'Admin'){
+          return this.navItems.filter(item => item.role !== 'Admin');
+        }else{
+          console.log("this is admin");
+          return this.navItems.filter(item => item.role === 'Admin');
+        }
       }
     },
     mounted() {
       const sessionData = sessionStorage.getItem('utmwebfc_session');
       if (sessionData) {
         this.userSession = JSON.parse(sessionData);
-        console.log(this.userSession);
+        this.role = this.userSession.role;
+        console.log(this.role);
       }
     }
   }

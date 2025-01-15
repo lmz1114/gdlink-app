@@ -230,6 +230,7 @@ const ResourceSharingDAO = {
         try {
             const query = `SELECT resources.resource_id,resources.sessem,
                                     category.category_name, category.color,
+                                    resources.owner,  
                             resources.description,resources.ref_name 
                             FROM resources INNER JOIN category ON resources.category_id = category.category_id WHERE sharer_id = ? ORDER BY shared_at DESC;`;
             rows = await conn.query(query,[sharerId]);
@@ -250,6 +251,7 @@ const ResourceSharingDAO = {
         try {
             const query = `SELECT resources.resource_id,resources.sessem,
                                     category.category_name, category.color,
+                                    resources.owner,  
                             resources.description,resources.ref_name 
                             FROM resources INNER JOIN sharing ON resources.resource_id = sharing.resource_id
                             INNER JOIN category ON resources.category_id = category.category_id WHERE receiver_id = ? ORDER BY resources.shared_at DESC;`;
@@ -270,7 +272,8 @@ const ResourceSharingDAO = {
         const conn = await getConnection();
         try {
             let query = `SELECT resources.resource_id,resources.sessem,
-                            category.category_name, category.color, 
+                            category.category_name, category.color,
+                            resources.owner,   
                             resources.description,resources.ref_name 
                             FROM resources`;
             let queryParams = [userId];
@@ -311,10 +314,10 @@ const ResourceSharingDAO = {
                             resources.resource_id,
                             resources.sessem,
                             category.category_name, 
+                            resources.owner,  
                             category.color,
                             resources.description,
-                            resources.ref_name,
-                            MATCH(resources.ref_name, resources.description) AGAINST(?) AS relevance
+                            resources.ref_name
                         FROM 
                             resources`;
 
@@ -325,14 +328,19 @@ const ResourceSharingDAO = {
             query += ` INNER JOIN category ON resources.category_id = category.category_id
                         WHERE 
                             ${userIdType} = ? 
-                            AND MATCH(resources.ref_name, resources.description) AGAINST(?)
-                        ORDER BY 
-                            relevance DESC;`;
+                            AND (resources.ref_name LIKE ? 
+                             OR resources.description LIKE ?)
+                        `;
     
-            const rows = await conn.query(query, [key,userId,key]);
+            console.log(userIdType);
+            console.log(key);
+            console.log(userId);
+            console.log(query);
+            const searchKey = `%${key}%`;
+            const rows = await conn.query(query, [userId,searchKey,searchKey]);
             return rows.map(snakeToCamel);;
         } catch (error) {
-            console.error('Error fetching filtered resources:', error);
+            console.error('Error fetching searched resources:', error);
             throw error; 
         }finally{
             conn.release();
@@ -434,8 +442,42 @@ const ResourceSharingDAO = {
         } finally {
             conn.release();
         }
+    },
+
+    async getAllResources() {
+        const conn = await getConnection();
+        try {
+            let query;
+                query = `SELECT
+                            resources.resource_id,
+                            resources.link, 
+                            resources.description,
+                            resources.ref_name,
+                            resources.sessem,
+                            resources.owner,  
+                            DATE_FORMAT(resources.shared_at, '%d/%m/%Y %r') AS shared_at,
+                            category.category_name,
+                            category.color
+                        FROM 
+                            resources
+                        INNER JOIN 
+                            users ON resources.sharer_id = users.user_id
+                        INNER JOIN
+                            category ON category.category_id = resources.category_id`;
+            
+            const rows = await conn.query(query);
+            return rows;
+        } catch (error) {
+            console.error('Error occurred while retrieving resources:', error);
+            return {
+                error: true,
+                message: 'An error occurred while retrieving the resources. Please try again later.',
+            };
+        } finally {
+            conn.release();
+        }
     }
-} 
+}
 
 module.exports = ResourceSharingDAO;
 

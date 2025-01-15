@@ -32,8 +32,8 @@
                             <p v-if="view === 'share'">Share To: </p> 
                             <span v-if="view === 'share'">
                                 {{ capitalizeWords(resource.shareTo) }}
-                                <i class="bi bi-info-circle" data-bs-toggle="modal" data-bs-target="#detailsModal"></i>
-                                <ShareToDetailsModal
+                                <i v-if="resource.shareTo === 'specific users' || resource.shareTo === 'specific groups'" class="bi bi-info-circle" data-bs-toggle="modal" data-bs-target="#detailsModal"></i>
+                                <ShareToDetailsModal v-if="resource.shareTo === 'specific users' || resource.shareTo === 'specific groups'"
                                     :title="capitalizeWords(resource.shareTo)"
                                     :groups="resource.groups"
                                     :receivers="resource.receivers"

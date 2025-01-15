@@ -223,6 +223,19 @@ const ResourceSharingService = {
                 message: 'An error occurred while retrieving the resources. Please try again later.'
             };
         }
+    },
+
+    async getAllResources(){
+        try{
+            return await ResourcesSharingDAO.getAllResources();
+        } catch (error) {
+            console.error('Service Error:', error);
+    
+            return {
+                error: true,
+                message: 'An error occurred while retrieving the resources. Please try again later.'
+            };
+        }
     }
 }
 

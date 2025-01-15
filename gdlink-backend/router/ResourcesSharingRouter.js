@@ -20,5 +20,7 @@ router.post('/share/:userId', ResourcesSharingController.shareResource);
 router.delete('/delete/:resourceId', ResourcesSharingController.deleteResource);
 router.put('/edit/:userId/:resourceId', ResourcesSharingController.editResource)
 
+router.get('/', ResourcesSharingController.getAllResources); 
+
 
 module.exports = router;

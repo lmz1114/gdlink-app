@@ -120,6 +120,15 @@ const ResourcesSharingService = {
         } catch (error) {
             console.error('Error fetching resources:', error);
         }
+    },
+
+    async getAllResources(){
+        try {
+            const response = await axios.get(`${API_BASE_URL}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
     }
     
 };

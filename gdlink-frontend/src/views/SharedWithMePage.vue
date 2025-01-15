@@ -14,11 +14,19 @@
                 <FilterField 
                     @filtercategory="updateCategory"
                     @filtersemester="updateSemester"
-                    class="float-start w-100 mb-5"
+                    class="float-start mb-5"
+                    style="width: 10%;"
                 />
+
+                <div class="btn-group float-end" style="width: 10%;">
+                    <a class="btn btn-secondary" :class="{ active: displayType === 'card' }" @click.prevent="setDisplayType('card')">Card</a>
+                    <a class="btn btn-secondary" :class="{ active: displayType === 'table' }" @click.prevent="setDisplayType('table')">Table</a>
+                </div>                 
+
                 <SharedWithMeResources
                     :resources="sharedWithMeResources"
                     @viewDetails = "viewDetails"
+                    :displayType="displayType"
                 />
             </section>
         </template>
@@ -40,7 +48,8 @@ export default {
         sharedWithMeResources: [],
         selectedCategories: null,
         selectedSemesters: null,
-        key: null
+        key: null,
+        displayType : 'card'
       };
     },
     components: {
@@ -89,6 +98,9 @@ export default {
         },
         viewDetails(resourceId){
             this.$router.push({ name: 'Shared With Me Resource Details', params: { resourceId: resourceId } });
+        },
+        setDisplayType(type){
+            this.displayType = type;
         }
     }
 };

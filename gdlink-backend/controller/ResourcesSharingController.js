@@ -191,6 +191,19 @@ const ResourcesSharingController = {
               error: error.message, 
             });
         }
+    },
+
+    async getAllResources(req,res){
+        try{
+            const resource = await ResourcesSharingService.getAllResources();
+            return res.json(resource);
+        } catch (error) {
+            console.error('Controller Error:', error.message); 
+            res.status(500).json({
+              message: 'An error occurred while retrieving the resource',
+              error: error.message, 
+            });
+        }
     }
 }
 
