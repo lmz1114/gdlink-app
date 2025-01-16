@@ -100,7 +100,7 @@ export default {
         }
       },
       async deletePicture(){
-          await SweetAlert.handleDeletion({
+          await SweetAlert.deleteSwal({
             confirmText: 'This action will permanently delete the picture.',
             successText: 'The picture has been deleted.',
             deleteAction: () => ProfileService.deletePicture(this.userId),

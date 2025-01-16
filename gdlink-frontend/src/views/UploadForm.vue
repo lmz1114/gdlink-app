@@ -1,5 +1,5 @@
 <template>
-    <DefaultLayout>
+    <DefaultLayout :activeTab = "activeTab">
         <template #default>
             <section class="border rounded mt-0 shadow-sm bg-white" style="padding: 1.5em">
       <h2 style="margin-bottom: 1em;"><strong>{{ (view==='edit') ? 'Resource Edit' : 'Resource Share' }}</strong></h2>
@@ -177,6 +177,7 @@
   import ResourcesSharingService from '../service/ResourcesSharingService';
   import CategoryService from '../service/CategoryService';
   import GroupService from '../service/GroupService';
+import SweetAlert from '@/Utils/SweetAlertUtils';
 
   export default {
     components: {
@@ -185,6 +186,7 @@
     data() {
       return {
         view: null,
+        activeTab: null,
         userId: null,
         resourceId: null,
         resource: {
@@ -221,6 +223,7 @@
       if(this.view === 'edit'){
         this.getResourceData();
       }
+      this.activeTab = 'My ShareLinks'
     },
     methods: {
       transformData(inputData) {
@@ -282,16 +285,14 @@
           });    
         }
         if(this.view === 'edit'){
-          const response1 = await ResourcesSharingService.editResource(this.userId,this.resourceId,this.previousShareTo,this.previousReceiverGroups,this.previousReceivers,this.resource);
-          console.log(response1);
+          await this.edit();
           this.cancelUpload();
           this.previousShareTo = '';
           this.previousReceiverGroups = [];
           this.previousReceivers = [];
           this.$router.push({ name: 'My ShareLinks Resource Details', params: { resourceId: this.resourceId } });
         }else{
-          const response2 = await ResourcesSharingService.shareResource(this.userId,this.resource);
-          console.log(response2);
+          await this.share();
           this.cancelUpload();
           this.$router.push('/my_sharelinks');
         }
@@ -299,6 +300,32 @@
       async getGroupData(){
           this.groups = await GroupService.getGroupList(this.userId);
       },
+      async share(){
+        const data = await ResourcesSharingService.shareResource(this.userId,this.resource);
+        try{
+          if(data.success){
+            SweetAlert.showSwal('Resource Shared!',data.message,'success');
+          }else{
+            SweetAlert.showSwal('Failed!',data.message,'error');
+          }
+        }catch(error){
+          console.error('Error sharing resource:', error);
+          SweetAlert.showSwal('Error!', 'An unexpected error occurred. Please try again later.', 'error');
+        }
+      },
+      async edit(){
+        const data = await ResourcesSharingService.editResource(this.userId,this.resourceId,this.previousShareTo,this.previousReceiverGroups,this.previousReceivers,this.resource);
+        try{
+          if(data.success){
+            SweetAlert.showSwal('Resource Updated!',data.message,'success');
+          }else{
+            SweetAlert.showSwal('Failed!',data.message,'error');
+          }
+        }catch(error){
+          console.error('Error editing resource:', error);
+          SweetAlert.showSwal('Error!', 'An unexpected error occurred. Please try again later.', 'error');
+        }
+      }
     },
   };
   </script>

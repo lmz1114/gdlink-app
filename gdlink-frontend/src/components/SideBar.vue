@@ -15,7 +15,12 @@
       <hr>
       
       <div>
-        <SideBarTab :items="filteredNavItems"/>
+        <SideBarTab 
+          v-for="(item,index) in filteredNavItems"
+          :key="index"
+          :item="item"
+          :isActive="item.name === activeTab"
+        />
       </div>
 
       <div class="d-flex justify-content-center align-items-end vh-100">
@@ -40,7 +45,6 @@
           <span class="mt-2" style="color:white;"><strong>Share Resource</strong></span>
         </div>
       </div>
-
       <hr>
       <div class="dropdown">
         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
@@ -62,6 +66,9 @@ import SideBarTab from './SideBarTab.vue';
   export default {
     components: {
       SideBarTab,
+    },
+    props: {
+      activeTab: String, 
     },
     data() {
       const navItems = [
@@ -102,7 +109,7 @@ import SideBarTab from './SideBarTab.vue';
         }
       }
     },
-    mounted() {
+    created() {
       const sessionData = sessionStorage.getItem('utmwebfc_session');
       if (sessionData) {
         this.userSession = JSON.parse(sessionData);

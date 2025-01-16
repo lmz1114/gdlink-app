@@ -85,32 +85,46 @@ const ResourceSharingDAO = {
             const result = await conn.query(query, [categoryId, refName, sessem, description, owner, link, shareTo, sharerId]);
     
             const resourceId = Number(result.insertId);
-            if(receiverGroups){
+    
+            if (resourceId <= 0) {
+                throw new Error('Failed to insert resource into database.');
+            }
+    
+            if (receiverGroups) {
                 const groupShareQuery = 'INSERT INTO group_sharing (group_id, resource_id) VALUES (?,?);';
-                for(let groupId of receiverGroups){
-                    await conn.query(groupShareQuery, [groupId, resourceId]);
+                for (let groupId of receiverGroups) {
+                    const groupResult = await conn.query(groupShareQuery, [groupId, resourceId]);
+                    if (groupResult.affectedRows <= 0) {
+                        throw new Error(`Failed to share resource with group ID: ${groupId}`);
+                    }
                 }
             }
+    
             const sharingQuery = `INSERT INTO sharing (receiver_id, resource_id) VALUES (?,?);`;
-            for(let receiver of receivers){
-                await conn.query(sharingQuery, [receiver.userId,resourceId]);
+            for (let receiver of receivers) {
+                const sharingResult = await conn.query(sharingQuery, [receiver.userId, resourceId]);
+                if (sharingResult.affectedRows <= 0) {
+                    throw new Error(`Failed to share resource with receiver ID: ${receiver.userId}`);
+                }
             }
     
             return {
-                resourceId: resourceId
+                success: true,
+                message: 'Resource shared successfully.',
             };
         } catch (error) {
             console.error('Error occurred while sharing resource:', error);
             return {
-                error: true,
-                message: 'An error occurred while sharing the resource. Please try again later.',
+                success: false,
+                message: error.message || 'An error occurred while sharing the resource. Please try again later.',
             };
         } finally {
-            conn.release(); 
+            conn.release();
         }
     },
+    
 
-    async editResource(resourceId, resource, isReceiverGroupsSame, previousReceiverGroups, usersToAdd){
+    async editResource(resourceId, resource, isReceiverGroupsSame, previousReceiverGroups, usersToAdd) {
         const conn = await getConnection();
         try {
             const { categoryId, refName, session, semester, description, owner, link, shareTo, receiverGroups } = resource;
@@ -127,39 +141,58 @@ const ResourceSharingDAO = {
                                 shared_at = NOW(), 
                                 share_to = ?
                             WHERE resource_id = ?;`;
+            
             const result = await conn.query(query, [categoryId, refName, sessem, description, owner, link, shareTo, resourceId]);
-
+            
+            // Check if any row was affected by the update
+            if (result.affectedRows <= 0) {
+                throw new Error('Resource update failed.');
+            }
+    
+            // Handle receiver group changes
             if (!isReceiverGroupsSame) {
-                if(previousReceiverGroups.length > 0){
-                    const deletePreviousGroupShareQuery2 = 'DELETE FROM group_sharing WHERE resource_id = ? AND group_id IN (?);';
-                    await conn.query(deletePreviousGroupShareQuery2, [resourceId, previousReceiverGroups]);
+                if (previousReceiverGroups.length > 0) {
+                    const deletePreviousGroupShareQuery = 'DELETE FROM group_sharing WHERE resource_id = ? AND group_id IN (?);';
+                    const deleteResult = await conn.query(deletePreviousGroupShareQuery, [resourceId, previousReceiverGroups]);
+    
+                    if (deleteResult.affectedRows <= 0) {
+                        throw new Error('Failed to remove previous group shares.');
+                    }
                 }
+    
                 const groupShareQuery = 'INSERT INTO group_sharing (group_id, resource_id) VALUES (?,?);';
                 for (let groupId of receiverGroups) {
-                    await conn.query(groupShareQuery, [groupId, resourceId]);
+                    const groupResult = await conn.query(groupShareQuery, [groupId, resourceId]);
+                    if (groupResult.affectedRows <= 0) {
+                        throw new Error(`Failed to share resource with group ID: ${groupId}`);
+                    }
                 }
             }
-
+    
+            // Insert users to be added
             const sharingQuery = `INSERT INTO sharing (receiver_id, resource_id) VALUES (?,?);`;
-            console.log(usersToAdd);
-            for(let receiver of usersToAdd){
-                await conn.query(sharingQuery, [receiver.userId,resourceId]);
+            for (let receiver of usersToAdd) {
+                const sharingResult = await conn.query(sharingQuery, [receiver.userId, resourceId]);
+                if (sharingResult.affectedRows <= 0) {
+                    throw new Error(`Failed to share resource with receiver ID: ${receiver.userId}`);
+                }
             }
     
             return {
-                resourceId: resourceId
+                success: true,
+                message: 'Resource updated and shared successfully.',
             };
         } catch (error) {
             console.error('Error occurred while editing resource:', error);
             return {
-                error: true,
-                message: 'An error occurred while editing the resource. Please try again later.',
+                success: false,
+                message: error.message || 'An error occurred while editing the resource. Please try again later.',
             };
         } finally {
-            conn.release(); 
+            conn.release();
         }
     },
-
+    
     async deleteResource(resourceId) {
         const conn = await getConnection();
         try {

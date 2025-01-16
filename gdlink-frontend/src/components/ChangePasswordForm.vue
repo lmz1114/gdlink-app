@@ -75,7 +75,8 @@
   </template>
   
   <script>
-  import ProfileService from '../service/ProfileService';
+  import SweetAlert from '@/Utils/SweetAlertUtils';
+import ProfileService from '../service/ProfileService';
 
   export default {
     props: {
@@ -114,13 +115,18 @@
       async processChangePassword(){
         try{
           const data = await ProfileService.updatePassword(this.userId,this.currentPassword,this.newPassword,this.confirmPassword);
-          alert(data.message);
+          if(data.success){
+            SweetAlert.showSwal('Password Changed!',data.message,'success');
+          }else{
+            SweetAlert.showSwal('Failed!',data.message,'error');
+          }
         }catch(error){
           if (error.response) {
             this.errorMessage = error.response.data.message || "An error occurred.";
+            SweetAlert.showSwal('Error!', this.errorMessage,'error');
             console.log(this.errorMessage);
           } else {
-            alert("Server unavailable. Please try again later.");
+            SweetAlert.showSwal('Error!', 'Server unavailable. Please try again later.','error');
           }
         }
       }

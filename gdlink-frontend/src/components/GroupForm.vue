@@ -59,7 +59,7 @@
   
 <script>
 import GroupService from '../service/GroupService';
-import Swal from 'sweetalert2';
+import SweetAlert from '@/Utils/SweetAlertUtils';
 
   export default {
     data() {
@@ -92,31 +92,13 @@ import Swal from 'sweetalert2';
       try {
         const data = await GroupService.createGroup(this.userId,this.group);
         if (data.success) {
-          Swal.fire({
-              title: 'Created!',
-              text: data.message,
-              icon: 'success',
-              timer: 2000,
-              showConfirmButton: false,
-          });
+          SweetAlert.showSwal('Created!', data.message, 'success');
         } else {
-            Swal.fire({
-                title: 'Error!',
-                text: data.message,
-                icon: 'error',
-                timer: 2000,
-                showConfirmButton: false,
-            });
+          SweetAlert.showSwal('Error!', data.message, 'error');
         }
       } catch (error) {
-          console.error('Error creating group:', error);
-          Swal.fire({
-            title: 'Error!',
-            text: 'An unexpected error occurred. Please try again later.',
-            icon: 'error',
-            timer: 2000,
-            showConfirmButton: false,
-        });
+        console.error('Error creating group:', error);
+        SweetAlert.showSwal('Error!', 'An unexpected error occurred. Please try again later.', 'error');
       }
     },
 
@@ -124,31 +106,13 @@ import Swal from 'sweetalert2';
       try {
         const data = await GroupService.editGroup(this.group);
         if (data.success) {
-          Swal.fire({
-              title: 'Updated!',
-              text: data.message,
-              icon: 'success',
-              timer: 2000,
-              showConfirmButton: false,
-          });
+          SweetAlert.showSwal('Updated!', data.message, 'success');
         } else {
-            Swal.fire({
-                title: 'Error!',
-                text: data.message,
-                icon: 'error',
-                timer: 2000,
-                showConfirmButton: false,
-            });
+          SweetAlert.showSwal('Error!', data.message, 'error');
         }
       } catch (error) {
           console.error('Error updating group:', error);
-          Swal.fire({
-            title: 'Error!',
-            text: 'An unexpected error occurred. Please try again later.',
-            icon: 'error',
-            timer: 2000,
-            showConfirmButton: false,
-        });
+          SweetAlert.showSwal('Error!', 'An unexpected error occurred. Please try again later.', 'error');
       }
     },
 

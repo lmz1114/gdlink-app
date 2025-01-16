@@ -1,5 +1,5 @@
 <template>
-    <DefaultLayout>
+    <DefaultLayout :activeTab="activeTab">
         <template #default>
             <div class="border rounded shadow-sm bg-white w-100 vh-100 p-4" style="position:relative;">
                 <div class="d-flex mb-4">
@@ -61,7 +61,7 @@ import DefaultLayout from '../components/DefaultLayout.vue';
 import ShareToDetailsModal from '../components/ShareToDetailsModal.vue';
 import ResourcesSharingService from '../service/ResourcesSharingService';
 import FavouriteService from '../service/FavouriteService';
-import Swal from 'sweetalert2';
+import SweetAlert from '../Utils/SweetAlertUtils';
 
 export default {
     data(){
@@ -69,7 +69,9 @@ export default {
             userId: null,
             resourceId: null,
             view: null,
-            resource: null
+            type: null,
+            resource: null,
+            activeTab: null
         }
     },
     components: {
@@ -81,6 +83,7 @@ export default {
     created(){
         this.resourceId = this.$route.params.resourceId;
         this.view = this.$route.meta.view;
+        this.type = this.$route.meta.type;
         const sessionData = sessionStorage.getItem('utmwebfc_session');
         if (sessionData) {
             const userSession = JSON.parse(sessionData);
@@ -99,9 +102,15 @@ export default {
             let resource;
             if(this.view === 'share'){
                 resource = await ResourcesSharingService.getMyShareLinksResourceDetails(this.resourceId);
+                this.activeTab = 'My ShareLinks';
             }
             else{
                 resource = await ResourcesSharingService.getSharedWithMeResourceDetails(this.resourceId,this.userId);
+                if(this.type == 'favourites'){
+                    this.activeTab = 'Favourites';
+                }else{
+                    this.activeTab = 'Shared With Me';
+                }   
             }
             this.resource = resource[0];
             this.$forceUpdate();
@@ -121,50 +130,13 @@ export default {
         editResource(){
             this.$router.push({ name: 'Edit Resource Form', params: { resourceId: this.resourceId } });
         },
-        async deleteResource() {
-            const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'This action will permanently delete the resource.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel',
-            });
-            if (result.isConfirmed) {
-                try {
-                    const data = await ResourcesSharingService.deleteResource(this.resourceId);
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Deleted!',
-                            text: 'The resource has been deleted.',
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false,
-                        });
-
-                        this.$router.push('/my_sharelinks');
-                } else {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Failed to delete the resource. Please try again.',
-                            icon: 'error',
-                            timer: 2000,
-                            showConfirmButton: false,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error deleting resource:', error);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'An unexpected error occurred. Please try again later.',
-                        icon: 'error',
-                        timer: 2000,
-                        showConfirmButton: false,
-                    });
-                }
-            }
+        async deleteResource(){
+          await SweetAlert.deleteSwal({
+            confirmText: 'This action will permanently delete the resource.',
+            successText: 'The resource has been deleted.',
+            deleteAction: () => ResourcesSharingService.deleteResource(this.resourceId),
+            navigation: () => this.$router.push('/my_sharelinks'),
+          });
         },
     }
 };

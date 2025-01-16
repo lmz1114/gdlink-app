@@ -65,7 +65,7 @@ import DefaultLayout from '../components/DefaultLayout.vue';
 import GroupForm from '../components/GroupForm.vue';
 import MemberModal from '../components/MemberModal.vue';
 import GroupMemberService from '../service/GroupMemberService';
-import Swal from 'sweetalert2';
+import SweetAlert from '../Utils/SweetAlertUtils';
 
 export default {
   data() {
@@ -105,49 +105,13 @@ export default {
             this.$refs.memberList.openModalForMembers(group);
         },
         async deleteGroup(group){
-            const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'This action will permanently delete the group.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel',
-            });
-            if (result.isConfirmed) {
-                try {
-                    const data = await GroupService.deleteGroup(group.groupId);
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Deleted!',
-                            text: 'The group has been deleted.',
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false,
-                        });
-                        await this.displayGroupList();
-                } else {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Failed to delete the group. Please try again.',
-                            icon: 'error',
-                            timer: 2000,
-                            showConfirmButton: false,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error deleting group:', error);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'An unexpected error occurred. Please try again later.',
-                        icon: 'error',
-                        timer: 2000,
-                        showConfirmButton: false,
-                    });
-                }
-            }
-        }
+          await SweetAlert.deleteSwal({
+            confirmText: 'This action will permanently delete the group.',
+            successText: 'The group has been deleted.',
+            deleteAction: () => GroupService.deleteGroup(group.groupId),
+            refreshData: () => this.displayGroupList(),
+          });
+        },
     }
 };
 </script>

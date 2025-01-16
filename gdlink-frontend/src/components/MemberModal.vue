@@ -75,6 +75,7 @@
 <script>
 import GroupMemberService from '../service/GroupMemberService';
 import Swal from 'sweetalert2';
+import SweetAlert from '@/Utils/SweetAlertUtils';
 
 export default {
     data() {
@@ -105,31 +106,13 @@ export default {
             try {
                 const data = await GroupMemberService.addMember(this.group.groupId,this.memberId);
                 if (data.success) {
-                Swal.fire({
-                    title: 'Added!',
-                    text: data.message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
+                    SweetAlert.showSwal('Added!', data.message, 'success');
                 } else {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: data.message,
-                        icon: 'error',
-                        timer: 2000,
-                        showConfirmButton: false,
-                    });
+                    SweetAlert.showSwal('Error!', data.message, 'error');
                 }
             } catch (error) {
                 console.error('Error adding member:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'An unexpected error occurred. Please try again later.',
-                    icon: 'error',
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
+                SweetAlert.showSwal('Error!', 'An unexpected error occurred. Please try again later.', 'error');
             }
         },
         async updateMemberRole(member){
@@ -165,48 +148,19 @@ export default {
             }
         },
         async removeMember(groupMemberId){
-            const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'This action will permanently removing the member.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, remove!',
-            cancelButtonText: 'Cancel',
+            await SweetAlert.deleteSwal({
+                confirmTitle: 'Are you sure?',
+                confirmText: 'This action will permanently remove the member.',
+                confirmButtonText: 'Yes, remove!',
+                cancelButtonText: 'Cancel',
+                successTitle: 'Removed!',
+                successText: 'The member has been removed.',
+                errorTitle: 'Error!',
+                errorText: 'Failed to remove the member. Please try again.',
+                unexpectedErrorText: 'An unexpected error occurred. Please try again later.',
+                deleteAction: () => GroupMemberService.removeMember(groupMemberId),
+                refreshData: () => this.displayMemberList(),
             });
-            if (result.isConfirmed) {
-                try {
-                    const data = await GroupMemberService.removeMember(groupMemberId);
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Removed!',
-                            text: 'The member has been removed.',
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false,
-                        });
-                } else {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Failed to remove the member. Please try again.',
-                            icon: 'error',
-                            timer: 2000,
-                            showConfirmButton: false,
-                        });
-                }
-                this.displayMemberList();
-                } catch (error) {
-                    console.error('Error removing member:', error);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'An unexpected error occurred. Please try again later.',
-                        icon: 'error',
-                        timer: 2000,
-                        showConfirmButton: false,
-                    });
-                }
-            }
         }
         
     }

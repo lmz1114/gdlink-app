@@ -1,11 +1,10 @@
 <template>
     <div class="nav nav-pills flex-column mb-auto">
     <router-link 
-      v-for="(item, index) in items" 
-      :key="index" 
-      :to="item.link" 
-      class="nav-link" 
-    >
+        :to="item.link" 
+        class="nav-link" 
+        :class="{ active: isActive }"
+      >
       <div class="d-flex align-items-center">
         <span v-if="item.icon" class="bi me-2 icon-align" width="16" height="16" v-html="displayIcon(item.icon)"></span>
         <span>{{ item.name }}</span>
@@ -18,15 +17,11 @@
   export default {
     name: 'SideBarTab',
     props: {
-      items: {
-        type: Array,
-        required: true, // Dynamically passed list of items to render
+      item: {
+        type: Object,
+        required: true, 
       },
-    },
-    data() {
-        return {
-            clicked: false,  // This should now be defined
-        };
+      isActive: Boolean,
     },
     methods: {
         displayIcon(itemicon){

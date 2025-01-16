@@ -2,7 +2,18 @@
 import Swal from "sweetalert2";
 
 const SweetAlert = {
-    async handleDeletion({
+
+    async showSwal(title, text, icon) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            timer: 2000,
+            showConfirmButton: false,
+        });
+    },
+
+    async deleteSwal({
         confirmTitle = 'Are you sure?',
         confirmText = 'This action will permanently delete the item.',
         confirmButtonText = 'Yes, delete it!',
@@ -14,6 +25,7 @@ const SweetAlert = {
         unexpectedErrorText = 'An unexpected error occurred. Please try again later.',
         deleteAction,
         refreshData = null,
+        navigation = null
     }) {
         const result = await Swal.fire({
             title: confirmTitle,
@@ -41,6 +53,11 @@ const SweetAlert = {
                     if (refreshData) {
                         await refreshData();
                     }
+
+                    if(navigation){
+                        navigation();
+                    }
+
                 } else {
                     Swal.fire({
                         title: errorTitle,
@@ -65,6 +82,4 @@ const SweetAlert = {
 }
 
 export default SweetAlert;
-// export async function showConfirmation({...}) {
-//     // Another reusable SweetAlert2 logic
-// }
+

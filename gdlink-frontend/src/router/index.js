@@ -27,7 +27,7 @@ const routes = [
   { path: '/profile', name:'Profile', component: ProfilePage},
   { path: '/my_sharelinks/resources/:resourceId', name:'My ShareLinks Resource Details', component: ResourceDetailsPage, meta: { view: 'share' }},
   { path: '/shared_with_me/resources/:resourceId', name:'Shared With Me Resource Details', component: ResourceDetailsPage, meta: { view: 'receive' }},
-  { path: '/favourites/resources/:resourceId', name:'Favourites Resource Details', component: ResourceDetailsPage, meta: { view: 'receive' }},
+  { path: '/favourites/resources/:resourceId', name:'Favourites Resource Details', component: ResourceDetailsPage, meta: { view: 'receive', type: 'favourites' }},
   { path: '/admin/AllResources', name: 'All Resources Page', component: AllResourcesPage },
 ]
 
