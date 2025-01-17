@@ -79,6 +79,7 @@ import SideBarTab from './SideBarTab.vue';
           { name: 'Notification', link: '/notification', icon: 'notification' },
           { name: 'Group', link: '/groups', icon: 'group' },
           { name: 'Resource Management', link: '/admin/AllResources', icon: 'mysharelinks' , role: 'Admin'},
+          { name: 'User Log', link: '/admin/UserLog', icon: 'sharewithme', role: 'Admin' } //new added
       ]
 
 
@@ -89,11 +90,32 @@ import SideBarTab from './SideBarTab.vue';
       };
     },
     methods:{
-        logout() {
-          sessionStorage.removeItem('utmwebfc_session');
-          this.userSession = null;
-          this.$router.push('/login'); 
-        },
+        async logout() { //updated if no user session redirect to login page
+      if (!this.userSession) {
+        console.warn("No active session found. Redirecting to login page.");
+        this.$router.push("/login");
+        return;
+      }
+
+      try {
+        const userId = this.userSession.user_id;
+        const actionMessage = `${this.userSession.name} logged out from the system`;
+
+        // Log the user action
+        await UserLogService.createUserLog(userId, actionMessage);
+
+        // Clear session data
+        sessionStorage.removeItem("utmwebfc_session");
+        this.userSession = null;
+
+        // Redirect to login page
+        this.$router.push("/login");
+      } catch (error) {
+        console.error("Error during logout:", error);
+        // Redirect to login page even if logging fails
+        this.$router.push("/login");
+      }
+    },
 
         navShareForm() {
           this.$router.push('/resource/share');
