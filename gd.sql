@@ -1,58 +1,38 @@
-/*M!999999\- enable the sandbox mode */ 
--- MariaDB dump 10.19-11.5.2-MariaDB, for Win64 (AMD64)
---
--- Host: localhost    Database: gd
--- ------------------------------------------------------
--- Server version	11.5.2-MariaDB
+- --------------------------------------------------------
+-- Host:                         localhost
+-- Server version:               11.6.2-MariaDB-ubu2404 - mariadb.org binary distribution
+-- Server OS:                    debian-linux-gnu
+-- HeidiSQL Version:             12.8.0.6908
+-- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
---
--- Table structure for table `category`
---
 
-DROP TABLE IF EXISTS `category`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `category` (
+-- Dumping database structure for gd
+CREATE DATABASE IF NOT EXISTS `gd` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci */;
+USE `gd`;
+
+-- Dumping structure for table gd.category
+CREATE TABLE IF NOT EXISTS `category` (
   `category_id` int(11) NOT NULL AUTO_INCREMENT,
   `category_name` varchar(30) DEFAULT NULL,
   `color` varchar(10) DEFAULT NULL,
+  `accessibility` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`category_id`),
   UNIQUE KEY `unique_category_name` (`category_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
---
--- Dumping data for table `category`
---
+-- Data exporting was unselected.
 
-LOCK TABLES `category` WRITE;
-/*!40000 ALTER TABLE `category` DISABLE KEYS */;
-INSERT INTO `category` VALUES
-(1,'Course Files','#008000'),
-(2,'Meeting','#FF0000'),
-(3,'Workshop','#0504AA');
-/*!40000 ALTER TABLE `category` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `favourite_resources`
---
-
-DROP TABLE IF EXISTS `favourite_resources`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `favourite_resources` (
+-- Dumping structure for table gd.favourite_resources
+CREATE TABLE IF NOT EXISTS `favourite_resources` (
   `user_id` varchar(10) NOT NULL,
   `resource_id` int(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
@@ -61,27 +41,65 @@ CREATE TABLE `favourite_resources` (
   CONSTRAINT `favourite_resources_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `favourite_resources_ibfk_2` FOREIGN KEY (`resource_id`) REFERENCES `resources` (`resource_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `favourite_resources`
---
+-- Data exporting was unselected.
 
-LOCK TABLES `favourite_resources` WRITE;
-/*!40000 ALTER TABLE `favourite_resources` DISABLE KEYS */;
-INSERT INTO `favourite_resources` VALUES
-('A22EC0062',3,'2024-12-26 10:40:18');
-/*!40000 ALTER TABLE `favourite_resources` ENABLE KEYS */;
-UNLOCK TABLES;
+-- Dumping structure for table gd.groups
+CREATE TABLE IF NOT EXISTS `groups` (
+  `group_id` int(11) NOT NULL AUTO_INCREMENT,
+  `group_name` varchar(20) NOT NULL,
+  `creator` varchar(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`group_id`),
+  KEY `creator` (`creator`),
+  CONSTRAINT `groups_ibfk_1` FOREIGN KEY (`creator`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
---
--- Table structure for table `resources`
---
+-- Data exporting was unselected.
 
-DROP TABLE IF EXISTS `resources`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `resources` (
+-- Dumping structure for table gd.group_members
+CREATE TABLE IF NOT EXISTS `group_members` (
+  `group_member_id` int(11) NOT NULL AUTO_INCREMENT,
+  `group_id` int(11) NOT NULL,
+  `member_id` varchar(11) NOT NULL,
+  `role` enum('admin','member') DEFAULT 'member',
+  `joined_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`group_member_id`),
+  UNIQUE KEY `group_id` (`group_id`,`member_id`),
+  KEY `member_id` (`member_id`),
+  CONSTRAINT `group_members_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `groups` (`group_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `group_members_ibfk_2` FOREIGN KEY (`member_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table gd.group_sharing
+CREATE TABLE IF NOT EXISTS `group_sharing` (
+  `group_id` int(11) NOT NULL,
+  `resource_id` int(11) NOT NULL,
+  PRIMARY KEY (`group_id`,`resource_id`),
+  KEY `resource_id` (`resource_id`),
+  CONSTRAINT `group_sharing_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `groups` (`group_id`),
+  CONSTRAINT `group_sharing_ibfk_2` FOREIGN KEY (`resource_id`) REFERENCES `resources` (`resource_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table gd.notifications
+CREATE TABLE IF NOT EXISTS `notifications` (
+  `notification_id` int(11) NOT NULL AUTO_INCREMENT,
+  `resource_id` int(11) DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`notification_id`),
+  KEY `FK_RESOURCE` (`resource_id`),
+  CONSTRAINT `FK_RESOURCE` FOREIGN KEY (`resource_id`) REFERENCES `resources` (`resource_id`) ON DELETE SET NULL ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table gd.resources
+CREATE TABLE IF NOT EXISTS `resources` (
   `resource_id` int(11) NOT NULL AUTO_INCREMENT,
   `category_id` int(11) DEFAULT NULL,
   `ref_name` varchar(50) DEFAULT NULL,
@@ -92,36 +110,21 @@ CREATE TABLE `resources` (
   `sharer_id` varchar(10) NOT NULL,
   `shared_at` datetime DEFAULT current_timestamp(),
   `latest_access_time` timestamp NULL DEFAULT NULL,
+  `share_to` varchar(30) DEFAULT NULL,
+  `action_type` varchar(20) DEFAULT NULL,
+  `latest_action_time` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`resource_id`),
   KEY `fk_category_id` (`category_id`),
   KEY `fk_sharer_id` (`sharer_id`),
   FULLTEXT KEY `ref_name` (`ref_name`,`description`),
   CONSTRAINT `fk_category_id` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_sharer_id` FOREIGN KEY (`sharer_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=InnoDB AUTO_INCREMENT=107 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
---
--- Dumping data for table `resources`
---
+-- Data exporting was unselected.
 
-LOCK TABLES `resources` WRITE;
-/*!40000 ALTER TABLE `resources` DISABLE KEYS */;
-INSERT INTO `resources` VALUES
-(1,1,'OOP-SPACE','2023/2024-2','Course files submission for SECJ2154/SCSJ2154','hakim@utmspace.edu.my','https://drive.google.com/drive/folders/???','A22EC0062','2024-12-24 21:25:33','2024-12-25 13:36:12'),
-(2,2,'SE Department Meeting','2023/2024-2','Mesyuarat Jabatan SE Bil. 2 2023/2024','radziahm@utm.my','https://drive.google.com/drive/folders/???','A22EC0062','2024-12-24 21:26:29','2024-12-26 10:40:35'),
-(3,1,'SECJ3304 - 05','2024/2025-1','Course files submission for IP Course Section 05','kwek@utm.my','https://drive.google.com/drive/folders/','A22EC0067','2024-12-25 13:38:27',NULL);
-/*!40000 ALTER TABLE `resources` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `sharing`
---
-
-DROP TABLE IF EXISTS `sharing`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `sharing` (
+-- Dumping structure for table gd.sharing
+CREATE TABLE IF NOT EXISTS `sharing` (
   `receiver_id` varchar(10) NOT NULL,
   `resource_id` int(11) NOT NULL,
   `latest_access_time` timestamp NULL DEFAULT NULL,
@@ -130,35 +133,11 @@ CREATE TABLE `sharing` (
   CONSTRAINT `fk_receiver_id` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_resource_id` FOREIGN KEY (`resource_id`) REFERENCES `resources` (`resource_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `sharing`
---
+-- Data exporting was unselected.
 
-LOCK TABLES `sharing` WRITE;
-/*!40000 ALTER TABLE `sharing` DISABLE KEYS */;
-INSERT INTO `sharing` VALUES
-('A22EC0058',1,NULL),
-('A22EC0067',1,NULL),
-('A22EC0122',1,NULL),
-('A22EC0058',2,NULL),
-('A22EC0067',2,NULL),
-('A22EC0122',2,NULL),
-('A22EC0058',3,NULL),
-('A22EC0062',3,'2024-12-26 10:40:23'),
-('A22EC0122',3,NULL);
-/*!40000 ALTER TABLE `sharing` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `users`
---
-
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `users` (
+-- Dumping structure for table gd.users
+CREATE TABLE IF NOT EXISTS `users` (
   `user_id` varchar(10) NOT NULL,
   `password` varchar(255) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
@@ -170,29 +149,38 @@ CREATE TABLE `users` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `users`
---
+-- Data exporting was unselected.
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES
-('A22EC0058',NULL,'kewheng@graduate.utm.my ','Pelajar FSKSM',NULL,'2024-12-16 07:29:09','KEW JIAN HENG',0),
-('A22EC0062','$2b$10$9FjrA8/Les7fs.sCqAtpWuAJj2DkB4q1Pvruq8CqLpwtNfZbVEnna','kuantong@graduate.utm.my ','Pelajar FSKSM','1734591132560-kwek.jpg','2024-12-17 15:44:41','KUAN JI TONG',1),
-('A22EC0067',NULL,'leowhong@graduate.utm.my ','Pelajar FSKSM',NULL,'2024-12-20 09:41:06','LEOW YAN HONG',0),
-('A22EC0122',NULL,'kwekcong@graduate.utm.my ','Pelajar FSKSM',NULL,'2024-12-16 07:24:23','KWEK JIA CONG',0);
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- Dumping structure for table gd.user_log
+CREATE TABLE IF NOT EXISTS `user_log` (
+  `log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(10) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT '',
+  `action` text NOT NULL,
+  `action_time` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`log_id`),
+  KEY `FK_user_action_log_users` (`user_id`),
+  CONSTRAINT `FK_user_action_log_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+-- Data exporting was unselected.
+
+-- Dumping structure for table gd.user_notification
+CREATE TABLE IF NOT EXISTS `user_notification` (
+  `user_id` varchar(10) NOT NULL,
+  `notification_id` int(11) NOT NULL,
+  `read_status` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`user_id`,`notification_id`),
+  KEY `FK_notification_id` (`notification_id`),
+  CONSTRAINT `FK_notification_id` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`notification_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_notification_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- Data exporting was unselected.
+
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
 
--- Dump completed on 2024-12-26 18:44:37
