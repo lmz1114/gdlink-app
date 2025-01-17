@@ -120,7 +120,7 @@ methods: {
         if (!confirmDelete) return;
 
         try {
-            const response = await ResourcesSharingService.deleteResource(resource_id);
+            const response = await ResourcesSharingService.deleteResource(this.userId, resource_id); //updated
             if (response.success) {
                 this.allResources = this.allResources.filter(resource => resource.resource_id !== resource_id);
                 alert('Resource deleted successfully.');
