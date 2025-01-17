@@ -2,6 +2,7 @@
 
 ## Project setup
 ```
+npm i dayjs (to format date and time)
 npm install
 ```
 
