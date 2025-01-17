@@ -21,6 +21,47 @@ const ResourceSharingDAO = {
         }
     },
 
+    //new added (find username for message)
+     async getUserNameById(userId) {
+        const conn = await getConnection();
+        try {
+            const query = `SELECT name FROM users WHERE user_id = ?`;
+            const rows = await conn.query(query, [userId]);
+
+        
+            if (rows && rows.length > 0) {
+                const user = snakeToCamel(rows[0]); 
+                return user.name; 
+            }
+            return ''; // Return an empty string if no user is found
+        } catch (error) {
+            console.error('Error fetching user name:', error.message);
+            throw error;
+        } finally {
+            if (conn) conn.release();
+        }
+    },
+
+    //new added(find resource refname for message)
+    async getRefNameById(resourceId) {
+        const conn = await getConnection();
+        try {
+            const query = `SELECT ref_name FROM resources WHERE resource_id = ?`;
+            const rows = await conn.query(query, [resourceId]);
+
+            if (rows && rows.length > 0) {
+                const resource = snakeToCamel(rows[0]);
+                return resource.refName; 
+            }
+            return ''; 
+        } catch (error) {
+            console.error('Error fetching resource name:', error.message);
+            throw error;
+        } finally {
+            if (conn) conn.release();
+        }
+    },
+
     async deleteSharesWithIN(resourceId, userIdsToRemove) {
         const conn = await getConnection();
         try {
