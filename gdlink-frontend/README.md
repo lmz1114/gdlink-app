@@ -8,7 +8,6 @@ npm install
 ## Format DATE and TIME
 ```
 npm i dayjs (to format date and time)
-
 ```
 
 ### Compiles and hot-reloads for development
