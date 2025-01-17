@@ -79,7 +79,7 @@ import SideBarTab from './SideBarTab.vue';
           { name: 'Notification', link: '/notification', icon: 'notification' },
           { name: 'Group', link: '/groups', icon: 'group' },
           { name: 'Resource Management', link: '/admin/AllResources', icon: 'mysharelinks' , role: 'Admin'},
-          { name: 'User Log', link: '/admin/UserLog', icon: 'sharewithme', role: 'Admin' } //new added
+          { name: 'User Log', link: '/admin/UserLog', icon: 'sharewithme', role: 'Admin' } //new added user log nav 
       ]
 
 
