@@ -42,7 +42,7 @@ const ResourceSharingDAO = {
         }
     },
 
-    //new added(find resource refname for message)
+    //new added(find resource refname of resource for message)
     async getRefNameById(resourceId) {
         const conn = await getConnection();
         try {
