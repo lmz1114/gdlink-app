@@ -17,7 +17,7 @@ router.get('/:resourceId', ResourcesSharingController.getMyShareLinksResourceDet
 router.get('/:resourceId/:userId', ResourcesSharingController.getSharedWithMeResourceDetails); 
 
 router.post('/share/:userId', ResourcesSharingController.shareResource); 
-router.delete('/delete/:resourceId', ResourcesSharingController.deleteResource);
+router.delete('/delete/:userId/:resourceId', ResourcesSharingController.deleteResource); //add userid param to get username for message
 router.put('/edit/:userId/:resourceId', ResourcesSharingController.editResource)
 
 router.get('/', ResourcesSharingController.getAllResources); 
