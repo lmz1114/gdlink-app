@@ -71,26 +71,6 @@ const ResourcesSharingController = {
         }
     },
 
-    async editResource(req,res){
-        try{
-            const sharerId = req.params.userId;
-            const resourceId = req.params.resourceId;
-            const {resource,previousShareTo,previousReceiverGroups,previousReceivers} = req.body;
-            console.log(resource);
-            const result = await ResourcesSharingService.editResource(sharerId,resourceId,previousShareTo,previousReceiverGroups,previousReceivers,resource);
-            res.status(201).json({
-                message: 'Resource shared successfully',
-                ...result,
-            });
-        } catch (error) {
-            console.error('Controller Error:', error.message); 
-            res.status(500).json({
-              message: 'An error occurred while sharing the resource',
-              error: error.message, 
-            });
-        }
-    },
-
     async editResource(req, res) {
         try {
             const sharerId = req.params.userId;
