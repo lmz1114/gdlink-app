@@ -60,87 +60,109 @@
       </div>
     </div>
   </template>
-  <script>
-
-import SideBarTab from './SideBarTab.vue';
-import ProfileService from '../service/ProfileService';
-
-  export default {
-    components: {
-      SideBarTab,
-    },
-    props: {
-      activeTab: String, 
-    },
-    data() {
-      const navItems = [
-          { name: 'Home', link: '/', icon: 'home', },
-          { name: 'My ShareLinks', link: '/my_sharelinks', icon: 'mysharelinks' },
-          { name: 'Shared With Me', link: '/shared_with_me', icon: 'sharewithme' },
-          { name: 'Favourites', link: '/favourites', icon: 'favourites' },
-          { name: 'Notification', link: '/notification', icon: 'notification' },
-          { name: 'Group', link: '/groups', icon: 'group' },
-          { name: 'Resource Management', link: '/admin/AllResources', icon: 'resource management' , role: 'Admin'},
-          { name: 'Category', link: '/admin/category', icon: 'category', role: 'Admin' },
-      ]
-
-
-      return {
-        userSession: null,
-        userId: null,
-        role: null,
-        navItems,
-        user: null,
-        imageUrl: null
-      };
-    },
-    computed: {
-      filteredNavItems() {
-        if(this.role !== 'Admin'){
-          return this.navItems.filter(item => item.role !== 'Admin');
-        }else{
-          console.log("this is admin");
-          return this.navItems.filter(item => item.role === 'Admin');
-        }
-      }
-    },
-    created() {
-      const sessionData = sessionStorage.getItem('utmwebfc_session');
-      if (sessionData) {
-        this.userSession = JSON.parse(sessionData);
-        this.role = this.userSession.role;
-        this.userId = this.userSession.user_id;
-        console.log(this.role);
-        this.getProfilePicture();
-      }
-    },
-    methods:{
-      logout() {
-        sessionStorage.removeItem('utmwebfc_session');
-        this.userSession = null;
-        this.$router.push('/login'); 
-      },
-
-      navShareForm() {
-        this.$router.push('/resource/share');
-      },
-
-      async getProfilePicture(){
-        try {
-          const data = await ProfileService.getUserData(this.userId);
-          this.user = data[0];
-          console.log(this.user);
-          if(this.user.picture){
-            this.imageUrl = ProfileService.getPictureUrl(this.user);
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      },
-    }
-  }
-  </script>
   
+ <script>
+import SideBarTab from "./SideBarTab.vue";
+import ProfileService from "../service/ProfileService";
+import UserLogService from "../service/UserLogService";
+
+export default {
+  components: {
+    SideBarTab,
+  },
+  props: {
+    activeTab: String,
+  },
+  data() {
+    const navItems = [
+      { name: "Home", link: "/", icon: "home" },
+      { name: "My ShareLinks", link: "/my_sharelinks", icon: "mysharelinks" },
+      { name: "Shared With Me", link: "/shared_with_me", icon: "sharewithme" },
+      { name: "Favourites", link: "/favourites", icon: "favourites" },
+      { name: "Notification", link: "/notification", icon: "notification" },
+      { name: "Group", link: "/groups", icon: "group" },
+      {
+        name: "Resource Management",
+        link: "/admin/AllResources",
+        icon: "mysharelinks",
+        role: "Admin",
+      },
+      {
+        name: "User Log",
+        link: "/admin/UserLog",
+        icon: "sharewithme",
+        role: "Admin",
+      },
+    ];
+
+    return {
+      userSession: null,
+      userId: null,
+      role: null,
+      navItems,
+      user: null,
+      imageUrl: null,
+    };
+  },
+
+  computed: {
+    filteredNavItems() {
+      if (this.role !== "Admin") {
+        return this.navItems.filter((item) => item.role !== "Admin");
+      } else {
+        return this.navItems.filter((item) => item.role === "Admin");
+      }
+    },
+  },
+
+  created() {
+    const sessionData = sessionStorage.getItem("utmwebfc_session");
+    if (sessionData) {
+      this.userSession = JSON.parse(sessionData);
+      this.role = this.userSession.role;
+      this.userId = this.userSession.user_id;
+      this.getProfilePicture();
+    }
+  },
+
+  methods: {
+    async logout() {
+      if (!this.userSession) {
+        this.$router.push("/login");
+        return;
+      }
+
+      try {
+        const actionMessage = `${this.userSession.name} logged out from the system`;
+        await UserLogService.createUserLog(this.userId, actionMessage);
+        sessionStorage.removeItem("utmwebfc_session");
+        this.userSession = null;
+        this.$router.push("/login");
+      } catch (error) {
+        console.error("Error during logout:", error);
+        this.$router.push("/login");
+      }
+    },
+
+    navShareForm() {
+      this.$router.push("/resource/share");
+    },
+
+    async getProfilePicture() {
+      try {
+        const data = await ProfileService.getUserData(this.userId);
+        this.user = data[0];
+        if (this.user.picture) {
+          this.imageUrl = ProfileService.getPictureUrl(this.user);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    },
+  },
+};
+</script>
+
   <style scoped>
   .upload-effect {
     cursor: pointer;

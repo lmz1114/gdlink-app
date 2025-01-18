@@ -1,4 +1,6 @@
 const ResourcesSharingService = require('../service/ResourcesSharingService');
+const NotificationService = require('../service/NotificationService');
+const UserLogService = require('../service/UserLogService');
 
 const ResourcesSharingController = {
     async getMyShareLinksChartData(req,res){
@@ -29,48 +31,129 @@ const ResourcesSharingController = {
             });
         }
     },
-    async shareResource(req,res){
-        try{
-            const sharerId = req.params.userId;
-            const {resource} = req.body;
-            console.log(resource);
-            const result = await ResourcesSharingService.shareResource(sharerId, resource);
-            res.status(201).json({
-                message: 'Resource shared successfully',
-                ...result,
-            });
-        } catch (error) {
-            console.error('Controller Error:', error.message); 
-            res.status(500).json({
-              message: 'An error occurred while sharing the resource',
-              error: error.message, 
-            });
-        }
-    },
 
-    async editResource(req,res){
-        try{
-            const sharerId = req.params.userId;
-            const resourceId = req.params.resourceId;
-            const {resource,previousShareTo,previousReceiverGroups,previousReceivers} = req.body;
-            console.log(resource);
-            const result = await ResourcesSharingService.editResource(sharerId,resourceId,previousShareTo,previousReceiverGroups,previousReceivers,resource);
-            res.status(201).json({
-                message: 'Resource shared successfully',
-                ...result,
-            });
-        } catch (error) {
-            console.error('Controller Error:', error.message); 
-            res.status(500).json({
-              message: 'An error occurred while sharing the resource',
-              error: error.message, 
-            });
-        }
-    },
-
-    async deleteResource(req, res) {
+    async shareResource(req, res) { //updated to generate notification and action log
         try {
+            const sharerId = req.params.userId;
+            const { resource } = req.body;
+            console.log(resource);
+            const { refName } = resource;
+
+            const username = await ResourcesSharingService.getUserNameById(sharerId);
+
+            const result = await ResourcesSharingService.shareResource(sharerId, resource);
+            const resourceId = result.resourceId;
+
+            // Define the notification message using refName
+            const message = `${username} shared the resource "${refName}" .`;
+
+            await UserLogService.createUserLog(sharerId, message);
+
+            const notificationResult = await NotificationService.createNotification(resourceId, message);
+            const notificationId = Number(notificationResult.insertId);
+
+            const receivers = await NotificationService.getReceiversToNotify(resourceId);
+
+            for (const receiver of receivers) {
+                await NotificationService.createUserNotifications(receiver.receiverId, notificationId);
+            }
+            console.log(message);
+            res.status(201).json({
+                message: 'Resource shared successfully',
+                ...result,
+            });
+        } catch (error) {
+            console.error('Controller Error:', error.message);
+            res.status(500).json({
+                message: 'An error occurred while sharing the resource',
+                error: error.message,
+            });
+        }
+    },
+
+    async editResource(req, res) { //updated
+        try {
+            const sharerId = req.params.userId;
             const resourceId = req.params.resourceId;
+            const { resource, previousShareTo, previousReceiverGroups, previousReceivers } = req.body;
+            console.log(resource);
+            const { refName } = resource;
+            const result = await ResourcesSharingService.editResource(sharerId, resourceId, previousShareTo, previousReceiverGroups, previousReceivers, resource);
+            
+
+            const username = await ResourcesSharingService.getUserNameById(sharerId); //GET name for actor
+            const ownerId = await NotificationService.getSharerToNotify(resourceId);//get userid for resource sharer
+
+            const message = `${username} edited the resource "${refName}" .`;
+            const messageForOwner = `Your resource "${refName}" has been edited by ${username}.`; //speccial message for resource sharer
+
+            await UserLogService.createUserLog(sharerId, message);
+
+            const notificationResult = await NotificationService.createNotification(resourceId, message);
+            const notificationId = Number(notificationResult.insertId);
+
+            // Fetch the receivers to notify
+            const receivers = await NotificationService.getReceiversToNotify(resourceId);
+
+            // Create user notifications for each receiver
+            for (const receiver of receivers) {
+                await NotificationService.createUserNotifications(receiver.receiverId, notificationId);
+            }
+
+            // Notify the resource owner about the edit
+        if (ownerId && ownerId !== sharerId) {
+            const ownerNotificationResult = await NotificationService.createNotification(resourceId, messageForOwner);
+            const ownerNotificationId = Number(ownerNotificationResult.insertId);
+
+            await NotificationService.createUserNotifications(ownerId, ownerNotificationId);
+        }
+            console.log(message);
+            res.status(201).json({
+                message: 'Resource shared successfully',
+                ...result,
+            });
+        } catch (error) {
+            console.error('Controller Error:', error.message);
+            res.status(500).json({
+                message: 'An error occurred while sharing the resource',
+                error: error.message,
+            });
+        }
+    },
+
+    async deleteResource(req, res) {//updated
+        try {
+            
+            const resourceId = req.params.resourceId;
+            const refName = await ResourcesSharingService.getRefNameById(resourceId);
+            const userId = req.params.userId;
+
+            const username = await ResourcesSharingService.getUserNameById(userId);
+            const ownerId = await NotificationService.getSharerToNotify(resourceId);//get userid for resource sharer
+            // Define the notification message using refName
+            const message = `${username} deleted the resource "${refName}" .`;
+            const messageForOwner = `Your resource "${refName}" has been deleted by ${username}.`;
+
+            await UserLogService.createUserLog(userId, message);
+
+            const notificationResult = await NotificationService.createNotification(resourceId, message);
+            const notificationId = Number(notificationResult.insertId);
+
+            const receivers = await NotificationService.getReceiversToNotify(resourceId);
+            
+            for (const receiver of receivers) {
+                await NotificationService.createUserNotifications(receiver.receiverId, notificationId);
+            }
+
+            if (ownerId && ownerId !== userId) {
+                const ownerNotificationResult = await NotificationService.createNotification(resourceId, messageForOwner);
+                const ownerNotificationId = Number(ownerNotificationResult.insertId);
+    
+                await NotificationService.createUserNotifications(ownerId, ownerNotificationId);
+            }
+
+            console.log(message);
+
             const result = await ResourcesSharingService.deleteResource(resourceId);
             return res.json(result);
         } catch (error) {
@@ -82,19 +165,20 @@ const ResourcesSharingController = {
         }
     },
 
-    async getMyShareLinksResources(req,res){
-        try{
+    async getMyShareLinksResources(req, res) {
+        try {
             const sharerId = req.params.userId;
             const resourceList = await ResourcesSharingService.getMyShareLinksResources(sharerId);
             return res.json(resourceList);
         } catch (error) {
-            console.error('Controller Error:', error.message); 
+            console.error('Controller Error:', error.message);
             res.status(500).json({
-              message: 'An error occurred while retrieving the resource',
-              error: error.message, 
+                message: 'An error occurred while retrieving the resource',
+                error: error.message,
             });
         }
     },
+
     async getSharedWithMeResources(req,res){
         try{
             const receiverId = req.params.userId;
