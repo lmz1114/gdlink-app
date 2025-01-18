@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 const router = express.Router();
+const UserLogService = require('../service/UserLogService'); //for userlog
 const { getConnection } = require('../db');
 
 router.post('/db_check', async (req, res) => {
@@ -40,6 +41,8 @@ router.post('/db_check', async (req, res) => {
     }
 
     if (await bcrypt.compare(password, user.password)) {
+    // if(password === user.password){
+      await UserLogService.createUserLog(user_id, `${user.name} logged into the system`); //add in userlog
       return res.status(200).json({
         login_type: 0,
         message: 'User login successful.',
@@ -102,6 +105,7 @@ router.post('/first_time_login', async (req, res) => {
 
     const [insertedUser] = await conn.query('SELECT * FROM users WHERE user_id = ?',[user_id]);
     if (insertedUser) {
+      await UserLogService.createUserLog(user_id, `${insertedUser.name} registered to the system`);//add in userlog (registration)
       return res.status(201).json({ message: 'User inserted successfully!', user: insertedUser });
     } else{
       return res.status(401).json({ message: 'Fail to insert', user : null});

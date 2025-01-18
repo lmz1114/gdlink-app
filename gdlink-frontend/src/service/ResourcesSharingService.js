@@ -30,9 +30,9 @@ const ResourcesSharingService = {
         }
     },
 
-    async deleteResource(resourceId) { 
+    async deleteResource(userId, resourceId) {  //add userId
         try {
-            const response = await axios.delete(`${API_BASE_URL}/delete/${resourceId}`);
+            const response = await axios.delete(`${API_BASE_URL}/delete/${userId}/${resourceId}`);
             return response.data;
         } catch (error) {
             console.error('Delete SErvice Error:', error);

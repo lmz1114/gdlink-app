@@ -14,7 +14,9 @@ const CategoryRouter = require('./router/CategoryRouter');
 const HomeRouter = require('./router/HomeRouter');
 const FavouriteRouter = require('./router/FavouriteRouter');
 const GroupRouter = require('./router/GroupRouter');
-const GroupMemberRouter = require('./router/GroupMemberRouter')
+const GroupMemberRouter = require('./router/GroupMemberRouter');
+const NotificationRouter = require('./router/NotificationRouter');
+const UserLogRouter = require('./router/UserLogRouter');
 
 
 // Middleware to parse JSON request bodies
@@ -29,6 +31,8 @@ app.use('/home', HomeRouter);
 app.use('/favourites', FavouriteRouter);
 app.use('/groups', GroupRouter);
 app.use('/groups/members', GroupMemberRouter);
+app.use('/notification', NotificationRouter);
+app.use('/userlog', UserLogRouter);
 
 
 // 404 Fallback

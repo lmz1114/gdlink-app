@@ -34,6 +34,26 @@ const ResourceSharingService = {
         return receivers;
     },
     
+    //new added
+    async getUserNameById(userId) {
+        try {
+            return await ResourcesSharingDAO.getUserNameById(userId);
+        } catch (error) {
+            console.error('Service Error:', error);
+            throw new Error('Failed to retrieve username. Please try again later.');
+        }
+    },
+
+    //new added
+    async getRefNameById(resourceId) {
+        try {
+            return await ResourcesSharingDAO.getRefNameById(resourceId);
+        } catch (error) {
+            console.error('Service Error:', error);
+            throw new Error('Failed to retrieve resource name. Please try again later.');
+        }
+    },
+    
     async shareResource(sharerId, resource) {
         const { shareTo, receiverGroups } = resource;
         let receivers;
