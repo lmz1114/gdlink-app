@@ -19,6 +19,15 @@ const NotificationService = {
         }
     },
 
+    async getSharerToNotify(resourceId) {
+        try {
+            return await NotificationDAO.getSharerToNotify(resourceId);
+        } catch (error) {
+            console.error('NotificationService Error:', error.message);
+            throw error;
+        } 
+    },
+
     async createUserNotifications(userId, notificationId) {
         try {
             return await NotificationDAO.createUserNotifications(userId, notificationId);
