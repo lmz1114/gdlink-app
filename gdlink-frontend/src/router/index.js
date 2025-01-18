@@ -12,8 +12,9 @@ import ProfilePage from '../views/ProfilePage.vue'
 import ResourceDetailsPage from '../views/ResourceDetailsPage.vue'
 import AllResourcesPage from '../views/AllResourcesPage.vue'
 import UserLogPage from '../views/UserLogPage.vue'
-
-
+import CategoryPage from '../views/CategoryPage.vue'
+import CategoryForm from '../views/CategoryForm.vue'
+import EditCategoryForm from '../views/EditCategoryForm.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: HomePage },
@@ -31,6 +32,9 @@ const routes = [
   { path: '/favourites/resources/:resourceId', name:'Favourites Resource Details', component: ResourceDetailsPage, meta: { view: 'receive', type: 'favourites' }},
   { path: '/admin/AllResources', name: 'All Resources Page', component: AllResourcesPage },
   { path: '/admin/UserLog', name: 'User Log Page', component: UserLogPage},
+  { path: '/admin/category/:categoryId', name: 'CategoryDetails', component: EditCategoryForm },
+  { path: '/admin/category', name:'CategoryPage', component: CategoryPage},
+  { path: '/admin/category_form', name:'CategoryForm', component: CategoryForm},
 ]
 
 const router = createRouter({

@@ -48,8 +48,9 @@
       <hr>
       <div class="dropdown">
         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="../assets/kwek.png" alt="" width="32" height="32" class="rounded-circle me-2">
-          <strong v-if="userSession">{{ userSession.name }}</strong>
+          <img v-if="!imageUrl" src="../assets/defaultPicture.jpg" alt="profilepic" width="32" height="32" class="rounded-circle me-2">
+          <img v-else :src="imageUrl" alt="profilepic" width="32" height="32" class="rounded-circle me-2">
+          <strong>{{ userSession.name }}</strong>
         </a>
         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
           <li>  <router-link class="dropdown-item" to="/profile">Profile</router-link>          </li>
@@ -59,7 +60,8 @@
       </div>
     </div>
   </template>
-    <script>
+  
+ <script>
 import SideBarTab from "./SideBarTab.vue";
 import ProfileService from "../service/ProfileService";
 import UserLogService from "../service/UserLogService";
@@ -90,7 +92,7 @@ export default {
         link: "/admin/UserLog",
         icon: "sharewithme",
         role: "Admin",
-      }, //new added user log nav
+      },
     ];
 
     return {
@@ -108,46 +110,36 @@ export default {
       if (this.role !== "Admin") {
         return this.navItems.filter((item) => item.role !== "Admin");
       } else {
-        console.log("this is admin");
         return this.navItems.filter((item) => item.role === "Admin");
       }
     },
   },
+
   created() {
     const sessionData = sessionStorage.getItem("utmwebfc_session");
     if (sessionData) {
       this.userSession = JSON.parse(sessionData);
       this.role = this.userSession.role;
       this.userId = this.userSession.user_id;
-      console.log(this.role);
       this.getProfilePicture();
     }
   },
 
   methods: {
     async logout() {
-      //updated if no user session redirect to login page
       if (!this.userSession) {
-        console.warn("No active session found. Redirecting to login page.");
         this.$router.push("/login");
         return;
       }
 
       try {
         const actionMessage = `${this.userSession.name} logged out from the system`;
-
-        // Log the user action
         await UserLogService.createUserLog(this.userId, actionMessage);
-
-        // Clear session data
         sessionStorage.removeItem("utmwebfc_session");
         this.userSession = null;
-
-        // Redirect to login page
         this.$router.push("/login");
       } catch (error) {
         console.error("Error during logout:", error);
-        // Redirect to login page even if logging fails
         this.$router.push("/login");
       }
     },
@@ -160,7 +152,6 @@ export default {
       try {
         const data = await ProfileService.getUserData(this.userId);
         this.user = data[0];
-        console.log(this.user);
         if (this.user.picture) {
           this.imageUrl = ProfileService.getPictureUrl(this.user);
         }
@@ -171,7 +162,7 @@ export default {
   },
 };
 </script>
-  
+
   <style scoped>
   .upload-effect {
     cursor: pointer;

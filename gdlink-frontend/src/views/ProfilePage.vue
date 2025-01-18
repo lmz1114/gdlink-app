@@ -1,5 +1,5 @@
 <template>
-    <DefaultLayout>
+    <DefaultLayout ref="layout">
         <template #default>
           <div>
             <div class="border rounded shadow-sm bg-white w-100 p-4 mb-4" style = "height:90px; ">
@@ -24,7 +24,7 @@
                   <i class="bi bi-trash3" @click="deletePicture"></i>
                 </div>
                   
-                  <ProfilePictureUploadForm  @refresh="getProfileData"/>
+                  <ProfilePictureUploadForm  @refresh="getProfileData" @update-profile-picture="triggerSideBar"/>
               </div>
 
               <div class = "d-flex flex-column w-75">
@@ -48,8 +48,25 @@
                   <ChangePasswordForm v-if="user" :is-default-password="!!user.isPassChanged"/>
                 </div>
 
-                <div class="border rounded shadow-sm bg-white h-50 p-4">
-
+                <div class="d-flex flex-column border rounded shadow-sm bg-white h-50 p-4" style="position:relative; overflow:hidden;">
+                  <h2 class = "mb-4"><b>User Shared Resources</b></h2>
+                  <div class="d-flex flex-row gap-3">
+                  <div box-width="180px" v-for="(resource, index) in myResources" :key="index"> 
+                    <ResourceBox 
+                      :categoryColor="resource.color"
+                      :refName="resource.refName"
+                      :description="resource.description"
+                      :sessem="resource.sessem"
+                      :categoryName="resource.categoryName"
+                    />
+                  </div>
+                  <div v-if="myResources.length === 4" class="d-flex align-items-center justify-content-center">
+                    <div class="view-more d-flex align-items-center justify-content-center flex-column" @click="$router.push('/my_shareLinks')">
+                      <i class="bi bi-caret-right"></i>
+                      <span style="font-size: 12px;"><b>View More</b></span>
+                    </div>
+                  </div>
+                </div>
                 </div>
 
               </div>
@@ -64,20 +81,24 @@ import DefaultLayout from '../components/DefaultLayout.vue';
 import ProfilePictureUploadForm from '../components/ProfilePictureUploadForm.vue';
 import ChangePasswordForm from '../components/ChangePasswordForm.vue';
 import ProfileService from '@/service/ProfileService';
-import SweetAlert from '../Utils/SweetAlertUtils'
+import SweetAlert from '../Utils/SweetAlertUtils';
+import ResourceBox from '../components/ResourceBox.vue';
+import ResourcesSharingService from '../service/ResourcesSharingService';
 
 export default {
     data(){
       return {
         userId: null,
         user: null,
-        imageUrl: null
+        imageUrl: null,
+        myResources: [],
       }
     },
     components: {
       DefaultLayout,
       ProfilePictureUploadForm,
       ChangePasswordForm,
+      ResourceBox
     },
     created() {
       const sessionData = sessionStorage.getItem('utmwebfc_session');
@@ -85,6 +106,7 @@ export default {
         const userSession = JSON.parse(sessionData);
         this.userId = userSession.user_id;
         this.getProfileData();
+        this.displayMySharedResources();
       }
     },
     methods:{
@@ -106,6 +128,12 @@ export default {
             deleteAction: () => ProfileService.deletePicture(this.userId),
             refreshData: () => this.getProfileData(),
           });
+      },
+      async displayMySharedResources(){
+        this.myResources = (await ResourcesSharingService.getMyShareLinksResources(this.userId)).slice(0, 4);
+      },
+      triggerSideBar(){
+        this.$refs.layout.$refs.sidebar.getProfilePicture();
       }
     }
 };
@@ -114,14 +142,11 @@ export default {
 <style scoped>
 
 .profile-page{
-  min-height: 100vh; /* Full height of the viewport */
+  min-height: 100vh; 
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Prevent scrollbar */
+  overflow: hidden;
 }
-  .bg-white{
-    background-color: white;
-  }
 
   .profile-image{
     border: 1px solid #000;
@@ -139,5 +164,25 @@ export default {
     position:absolute;
     right:30px;
     cursor: pointer;
+  }
+
+  .view-more{
+    border-radius: 10%;
+    padding: 10px; 
+    cursor: pointer;
+  }
+
+  .view-more:hover{
+    background-color: lightgray;
+    transform: scale(1.2);
+  }
+
+  .view-more:active{
+    background-color: lightgray;
+    transform: scale(0.9);
+  }
+
+  .bi-caret-right{
+    font-size: 30px;
   }
 </style>
