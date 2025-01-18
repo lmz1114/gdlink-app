@@ -48,8 +48,9 @@
       <hr>
       <div class="dropdown">
         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="../assets/kwek.png" alt="" width="32" height="32" class="rounded-circle me-2">
-          <strong v-if="userSession">{{ userSession.name }}</strong>
+          <img v-if="!imageUrl" src="../assets/defaultPicture.jpg" alt="profilepic" width="32" height="32" class="rounded-circle me-2">
+          <img v-else :src="imageUrl" alt="profilepic" width="32" height="32" class="rounded-circle me-2">
+          <strong>{{ userSession.name }}</strong>
         </a>
         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
           <li>  <router-link class="dropdown-item" to="/profile">Profile</router-link>          </li>
@@ -62,6 +63,7 @@
   <script>
 
 import SideBarTab from './SideBarTab.vue';
+import ProfileService from '../service/ProfileService';
 
   export default {
     components: {
@@ -78,26 +80,19 @@ import SideBarTab from './SideBarTab.vue';
           { name: 'Favourites', link: '/favourites', icon: 'favourites' },
           { name: 'Notification', link: '/notification', icon: 'notification' },
           { name: 'Group', link: '/groups', icon: 'group' },
-          { name: 'Resource Management', link: '/admin/AllResources', icon: 'mysharelinks' , role: 'Admin'},
+          { name: 'Resource Management', link: '/admin/AllResources', icon: 'resource management' , role: 'Admin'},
+          { name: 'Category', link: '/admin/category', icon: 'category', role: 'Admin' },
       ]
 
 
       return {
         userSession: null,
+        userId: null,
         role: null,
         navItems,
+        user: null,
+        imageUrl: null
       };
-    },
-    methods:{
-        logout() {
-          sessionStorage.removeItem('utmwebfc_session');
-          this.userSession = null;
-          this.$router.push('/login'); 
-        },
-
-        navShareForm() {
-          this.$router.push('/resource/share');
-        },
     },
     computed: {
       filteredNavItems() {
@@ -114,8 +109,34 @@ import SideBarTab from './SideBarTab.vue';
       if (sessionData) {
         this.userSession = JSON.parse(sessionData);
         this.role = this.userSession.role;
+        this.userId = this.userSession.user_id;
         console.log(this.role);
+        this.getProfilePicture();
       }
+    },
+    methods:{
+      logout() {
+        sessionStorage.removeItem('utmwebfc_session');
+        this.userSession = null;
+        this.$router.push('/login'); 
+      },
+
+      navShareForm() {
+        this.$router.push('/resource/share');
+      },
+
+      async getProfilePicture(){
+        try {
+          const data = await ProfileService.getUserData(this.userId);
+          this.user = data[0];
+          console.log(this.user);
+          if(this.user.picture){
+            this.imageUrl = ProfileService.getPictureUrl(this.user);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      },
     }
   }
   </script>

@@ -2,7 +2,7 @@
     <div class="container-fluid">
       <div class="d-flex" style="height: 100vh;">
         <!-- Sidebar -->
-        <SideBar :activeTab="activeTab"/>
+        <SideBar :activeTab="activeTab" ref="sidebar"/>
         <!-- Main Content Area (Slot for dynamic content) -->
         <div class="flex-grow-1 p-4 bg-grey" style="margin-left:280px; overflow-y: auto;">
           <slot></slot> <!-- Content will be injected here -->

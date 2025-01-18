@@ -5,8 +5,15 @@ const GroupDAO = {
     async getGroupList(userId){
         const conn = await getConnection();
         try{
-            const query = 'SELECT * FROM groups WHERE creator = ?;';
+            const query = `SELECT g.group_id, g.group_name, g.creator, g.created_at, COUNT(m.member_id) AS number_of_members
+                            FROM groups g
+                            LEFT JOIN group_members m ON g.group_id = m.group_id
+                            WHERE g.creator = ?
+                            GROUP BY g.group_id, g.group_name, g.creator, g.created_at;`;
             const rows = await conn.query(query,[userId]);
+            rows.forEach(row => {
+                row.number_of_members = Number(row.number_of_members); 
+            });
             return rows.map(snakeToCamel);
         }catch(error){
             console.error('Error occurred while retrieving groups:', error);

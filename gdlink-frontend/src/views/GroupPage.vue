@@ -35,7 +35,7 @@
                         <tr v-for="(group, index) in groups" :key="group.groupId">
                         <th scope="row">{{index+1}}</th>
                         <td>{{ group.groupName }}</td>
-                        <td>0</td>
+                        <td>{{ group.numberOfMembers }}</td>
                         <td>
                             <div class="d-flex flex-row gap-3">
                                 <span @click="openMemberListModal(group)" data-bs-toggle="modal" data-bs-target="#memberListModal">
@@ -54,7 +54,7 @@
                 </table>
             </div>
             <GroupForm ref="groupForm" @refresh="displayGroupList"/>
-            <MemberModal ref="memberList"/>
+            <MemberModal ref="memberList" @refresh="displayGroupList"/>
         </template>
     </DefaultLayout>
 </template>

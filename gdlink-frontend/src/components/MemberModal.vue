@@ -83,6 +83,7 @@ export default {
             group: [],
             groupMembers: [],
             memberId: '',
+            userId: null
         };
     },
     methods:{
@@ -114,6 +115,7 @@ export default {
                 console.error('Error adding member:', error);
                 SweetAlert.showSwal('Error!', 'An unexpected error occurred. Please try again later.', 'error');
             }
+            this.$emit('refresh');
         },
         async updateMemberRole(member){
             try {
@@ -161,6 +163,7 @@ export default {
                 deleteAction: () => GroupMemberService.removeMember(groupMemberId),
                 refreshData: () => this.displayMemberList(),
             });
+            this.$emit('refresh');
         }
         
     }

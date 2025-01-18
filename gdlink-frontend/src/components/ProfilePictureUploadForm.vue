@@ -71,6 +71,7 @@ import 'cropperjs/dist/cropper.css';
 
 import Cropper from 'cropperjs';
 import ProfileService from '@/service/ProfileService';
+import SweetAlert from '@/Utils/SweetAlertUtils';
 
 export default {
   data() {
@@ -104,7 +105,11 @@ export default {
         return;
       }
       const selectedFile = event.target.files[0];
+
       if (selectedFile) {
+        if (!this.validateImage(selectedFile)) {
+          return; 
+        }
         this.file = selectedFile;
         this.previewImage = URL.createObjectURL(this.file);
         this.$nextTick(() => {
@@ -140,10 +145,11 @@ export default {
         alert('Please drop only one image.');
         return;
       }
-      console.log(event);
       const droppedFile = event.dataTransfer.files[0];
-      console.log(droppedFile)
       if (droppedFile) {
+        if (!this.validateImage(droppedFile)) {
+          return; 
+        }
         this.file = droppedFile;
         this.previewImage = URL.createObjectURL(this.file);
         console.log(this.previewImage);
@@ -163,6 +169,7 @@ export default {
         await this.processUpload();
         this.resetFile();
         this.$emit('refresh');
+        this.$emit('update-profile-picture');
       }
     },
     resetFile() {
@@ -183,10 +190,28 @@ export default {
       try {
         const data = await ProfileService.updatePicture(this.userId,formData);
           alert(data.message);
-        } catch (error) {
+      } catch (error) {
           alert('Failed to upload image.');
-        }
+      }
+    },
+
+    validateImage(file) {
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      const allowedTypes = ['image/jpeg', 'image/png'];
+
+      if (!allowedTypes.includes(file.type)) {
+        SweetAlert.showSwal('Wrong File Type!','Invalid file type. Only JPEG and PNG are allowed.','error');
+        return false;
+      }
+
+      if (file.size > maxSize) {
+        SweetAlert.showSwal('Wrong File Size!','File size should not exceed 2MB.','error');
+        return false;
+      }
+
+      return true;
     }
+
   },
 };
 </script>
