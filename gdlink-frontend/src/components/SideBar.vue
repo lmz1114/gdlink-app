@@ -62,6 +62,7 @@
   <script>
 
 import SideBarTab from './SideBarTab.vue';
+import UserLogService from '../service/UserLogService';
 
   export default {
     components: {
