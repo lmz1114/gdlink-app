@@ -11,6 +11,7 @@ import GroupPage from '../views/GroupPage.vue'
 import ProfilePage from '../views/ProfilePage.vue'
 import ResourceDetailsPage from '../views/ResourceDetailsPage.vue'
 import AllResourcesPage from '../views/AllResourcesPage.vue'
+import UserLogPage from '../views/UserLogPage.vue'
 
 
 
