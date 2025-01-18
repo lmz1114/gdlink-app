@@ -150,6 +150,7 @@ const ResourceSharingDAO = {
             }
     
             return {
+                resourceId: resourceId,
                 success: true,
                 message: 'Resource shared successfully.',
             };
