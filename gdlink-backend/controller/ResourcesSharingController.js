@@ -77,14 +77,15 @@ const ResourcesSharingController = {
             const resourceId = req.params.resourceId;
             const { resource, previousShareTo, previousReceiverGroups, previousReceivers } = req.body;
             console.log(resource);
-
             const { refName } = resource;
-
-            const username = await ResourcesSharingService.getUserNameById(sharerId);
-
             const result = await ResourcesSharingService.editResource(sharerId, resourceId, previousShareTo, previousReceiverGroups, previousReceivers, resource);
+            
+
+            const username = await ResourcesSharingService.getUserNameById(sharerId); //GET name for actor
+            const ownerId = await NotificationService.getSharerToNotify(resourceId);//get userid for resource sharer
 
             const message = `${username} edited the resource "${refName}" .`;
+            const messageForOwner = `Your resource "${refName}" has been edited by ${username}.`;
 
             await UserLogService.createUserLog(sharerId, message);
 
@@ -98,6 +99,14 @@ const ResourcesSharingController = {
             for (const receiver of receivers) {
                 await NotificationService.createUserNotifications(receiver.receiverId, notificationId);
             }
+
+            // Notify the resource owner about the edit
+        if (ownerId && ownerId !== sharerId) {
+            const ownerNotificationResult = await NotificationService.createNotification(resourceId, messageForOwner);
+            const ownerNotificationId = Number(ownerNotificationResult.insertId);
+
+            await NotificationService.createUserNotifications(ownerId, ownerNotificationId);
+        }
             console.log(message);
             res.status(201).json({
                 message: 'Resource shared successfully',
@@ -118,9 +127,12 @@ const ResourcesSharingController = {
             const resourceId = req.params.resourceId;
             const refName = await ResourcesSharingService.getRefNameById(resourceId);
             const userId = req.params.userId;
+
             const username = await ResourcesSharingService.getUserNameById(userId);
+            const ownerId = await NotificationService.getSharerToNotify(resourceId);//get userid for resource sharer
             // Define the notification message using refName
             const message = `${username} deleted the resource "${refName}" .`;
+            const messageForOwner = `Your resource "${refName}" has been deleted by ${username}.`;
 
             await UserLogService.createUserLog(userId, message);
 
@@ -132,6 +144,14 @@ const ResourcesSharingController = {
             for (const receiver of receivers) {
                 await NotificationService.createUserNotifications(receiver.receiverId, notificationId);
             }
+
+            if (ownerId && ownerId !== userId) {
+                const ownerNotificationResult = await NotificationService.createNotification(resourceId, messageForOwner);
+                const ownerNotificationId = Number(ownerNotificationResult.insertId);
+    
+                await NotificationService.createUserNotifications(ownerId, ownerNotificationId);
+            }
+
             console.log(message);
 
             const result = await ResourcesSharingService.deleteResource(resourceId);
