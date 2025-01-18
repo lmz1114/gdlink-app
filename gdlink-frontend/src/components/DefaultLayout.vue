@@ -19,7 +19,10 @@
       SideBar
     },
     props:{
-      activeTab: String
+      activeTab: {
+        type: String,
+        default: 'Home'
+      }
     },
   };
   </script>
