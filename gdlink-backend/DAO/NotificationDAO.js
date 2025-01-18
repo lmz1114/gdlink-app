@@ -30,6 +30,25 @@ const NotificationDAO = {
         }
     },
 
+    async getSharerToNotify(resourceId) {
+        const conn = await getConnection();
+        try {
+            const query = 'SELECT sharer_id FROM resources WHERE resource_id = ?';
+            const rows = await conn.query(query, [resourceId]);
+
+            if (rows && rows.length > 0) {
+                const sharer = snakeToCamel(rows[0]); 
+                return sharer.sharerId; 
+            }
+            return '';
+        } catch (error) {
+            console.error('Error fetching receivers:', error.message);
+            throw error;
+        } finally {
+            conn.release();
+        }
+    },
+
     async createUserNotifications(userId, notificationId) {
         const conn = await getConnection();
         try {
