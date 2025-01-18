@@ -32,7 +32,7 @@ const ResourcesSharingController = {
         }
     },
 
-    async shareResource(req, res) {
+    async shareResource(req, res) { //updated to generate notification and action log
         try {
             const sharerId = req.params.userId;
             const { resource } = req.body;
@@ -71,7 +71,7 @@ const ResourcesSharingController = {
         }
     },
 
-    async editResource(req, res) {
+    async editResource(req, res) { //updated
         try {
             const sharerId = req.params.userId;
             const resourceId = req.params.resourceId;
@@ -85,7 +85,7 @@ const ResourcesSharingController = {
             const ownerId = await NotificationService.getSharerToNotify(resourceId);//get userid for resource sharer
 
             const message = `${username} edited the resource "${refName}" .`;
-            const messageForOwner = `Your resource "${refName}" has been edited by ${username}.`;
+            const messageForOwner = `Your resource "${refName}" has been edited by ${username}.`; //speccial message for resource sharer
 
             await UserLogService.createUserLog(sharerId, message);
 
@@ -121,7 +121,7 @@ const ResourcesSharingController = {
         }
     },
 
-    async deleteResource(req, res) {
+    async deleteResource(req, res) {//updated
         try {
             
             const resourceId = req.params.resourceId;
