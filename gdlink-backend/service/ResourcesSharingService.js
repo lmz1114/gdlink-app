@@ -65,6 +65,7 @@ const ResourceSharingService = {
             console.error('Service Error:', error);
     
             return {
+                resourceId: resourceId,
                 error: true,
                 message: 'An error occurred while sharing the resource. Please try again later.'
             };
