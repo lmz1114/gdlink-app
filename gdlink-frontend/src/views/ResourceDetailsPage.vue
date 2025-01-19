@@ -134,7 +134,7 @@ export default {
           await SweetAlert.deleteSwal({
             confirmText: 'This action will permanently delete the resource.',
             successText: 'The resource has been deleted.',
-            deleteAction: () => ResourcesSharingService.deleteResource(this.userId, this.resourceId)
+            deleteAction: () => ResourcesSharingService.deleteResource(this.userId, this.resourceId),
             navigation: () => this.$router.push('/my_sharelinks'),
           });
         },

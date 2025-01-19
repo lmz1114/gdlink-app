@@ -7,7 +7,7 @@ const port = 8081;
 app.use(cors()); // Allows all domains to access the backend
 
 // Import Routers
-const loginRouter = require('./router/login');
+const LoginRouter = require('./router/LoginRouter');
 const ProfileRouter = require('./router/ProfileRouter');
 const ResourcesSharingRouter = require('./router/ResourcesSharingRouter');
 const CategoryRouter = require('./router/CategoryRouter');
@@ -23,7 +23,7 @@ const UserLogRouter = require('./router/UserLogRouter');
 app.use(express.json()); 
 
 // Use the routes
-app.use('/login', loginRouter);
+app.use('/login', LoginRouter);
 app.use('/profile', ProfileRouter);
 app.use('/resources', ResourcesSharingRouter);
 app.use('/categories', CategoryRouter);

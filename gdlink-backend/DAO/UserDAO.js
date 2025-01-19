@@ -2,6 +2,32 @@ const { getConnection } = require('../db');
 const {snakeToCamel} = require('../tools/camelTransform');
 
 const UserDAO = {
+    async findUserById (userId) {
+        const conn = await getConnection();
+        try {
+          const [user] = await conn.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+          return user || null;
+        } finally {
+          if (conn) conn.release();
+        }
+    },
+
+    async insertUser (username, role, email, userId) {
+        const conn = await getConnection();
+        try {
+          await conn.query('INSERT INTO users (user_id, email, role, name) VALUES (?, ?, ?, ?)', [
+            userId,
+            email,
+            role,
+            username,
+          ]);
+          const [user] = await conn.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+          return user || null;
+        } finally {
+          if (conn) conn.release();
+        }
+    },
+
     async getUserData(userId){
         const conn = await getConnection();
 

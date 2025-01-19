@@ -16,6 +16,7 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "core-js": "^3.8.3",
     "cropperjs": "^1.6.2",
+    "dayjs": "^1.11.13",
     "sweetalert2": "^11.15.3",
     "vue": "3.5.12",
     "vue-router": "^4.4.5"

@@ -21,7 +21,6 @@
     props:{
       activeTab: {
         type: String,
-        default: 'Home'
       }
     },
   };

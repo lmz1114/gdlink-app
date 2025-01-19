@@ -17,6 +17,9 @@
         </div>
   
         <form @submit.prevent="login">
+          <div v-if="message" class="alert alert-danger" role="alert">
+            {{ message }}
+          </div>
           <div class="mb-3">
             <label for="userId" class="form-label"><b>User ID</b></label>
             <div class="form-input">
@@ -43,23 +46,17 @@
       </div>
     </div>
   </div>
-  </template>
-  
+</template>
 
-<style>
-  @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
-</style>
+<script>
+import LoginService from '@/service/LoginService';
 
-  <script>
-  import axios from 'axios';
-
-  export default {
+ export default {
     data() {
       return {
         userId: '',
         password: '',
-        url: 'http://web.fc.utm.my/ttms/web_man_webservice_json.cgi?entity=authentication',
-        message: '',
+        message: null,
         inputType: 'password',
         passIcon: 'bi-eye-slash',
         hide: true
@@ -78,74 +75,52 @@
           this.passIcon = 'bi-eye-slash';
         }
       },
-      async login(){
+      async login() {
         try {
-          const response = await axios.post('http://localhost:8081/login/db_check',{
-            user_id: this.userId,
-            password: this.password
-          });
-          const { login_type, message, user } = response.data;
-          if ( login_type === 0) {
-              console.log(message);
-              sessionStorage.setItem('utmwebfc_session', JSON.stringify(user));
-              this.$router.push('/'); 
-          } else if(login_type){
-            const data = await this.loginByDefaultPass();
-            if(data.user){
-              switch(login_type){
-                case 1: this.first_time_login(data.user); break;
+          const data = await LoginService.loginWithDbCheck(this.userId, this.password);
 
-                case 2: this.existing_login(user); break;
-              }
-            } 
+          if(data.success){
+            sessionStorage.setItem('utmwebfc_session', JSON.stringify(data.user));
+            this.$router.push('/');
           }
-        } catch (error) {
-          alert('Error fetching data:', error);
-        }
-      },
-
-      async loginByDefaultPass(){
-        try {
-          const response = await axios.post('http://localhost:8081/login/default_login', {
-            userId: this.userId,
-            password: this.password,
-          });
-
-          return response.data;
-
-        } catch (err) {
-          console.error('Error during login:', err);
-          return null;
-        }
-      },
-
-      async first_time_login(instance){
-        try {
-          const response = await axios.post('http://localhost:8081/login/first_time_login', {
-            user_id: instance.login_name,
-            username: instance.full_name,
-            email: instance.email,
-            role: instance.description
-          });
-
-          const { message, user } = response.data;
-          console.log(message);
-          if(response.status === 201){
-            sessionStorage.setItem('utmwebfc_session', JSON.stringify(user));
-            this.$router.push('/'); 
+          console.log(data.loginType)
+          if(data.loginType) {
+            const data2 = await LoginService.loginWithDefaultPass(this.userId, this.password);
+            const loginType = data.loginType;
+            console.log(data2.success);
+            if(data2.success){
+              if(loginType === 'default login')
+                this.handleExistingLogin(data.user);
+              else if(loginType === 'first time login')
+                await this.handleFirstTimeLogin(data2.user);
+            }
           }
+          this.message = data.message;
         } catch (error) {
-            this.message = 'Error occur.';
-            console.error(error);
+          this.message = 'Error fetching data.';
+          console.error(error);
         }
       },
+    async handleFirstTimeLogin(instance) {
+      try {
+        const data = await LoginService.firstTimeLogin(instance);
 
-      async existing_login(user){
-        sessionStorage.setItem('utmwebfc_session', JSON.stringify(user));
-        this.$router.push('/'); 
+        if (data.success) {
+          sessionStorage.setItem('utmwebfc_session', JSON.stringify(data.$eluser));
+          this.$router.push('/');
+        } 
+      } catch (error) {
+        this.message = 'Error occurred.';
+        console.error(error);
       }
     },
-  };
+    handleExistingLogin(user) {
+      sessionStorage.setItem('utmwebfc_session', JSON.stringify(user));
+      this.$router.push('/');
+  }
+}
+
+  }
   </script>
   
   <style scoped>
