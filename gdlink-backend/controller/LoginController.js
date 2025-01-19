@@ -17,18 +17,6 @@ const LoginController = {
         }
     },
 
-    async defaultLogin(req,res){
-        const { userId, password } = req.body;
-
-        try {
-          const result = await LoginService.fetchExternalLogin(userId, password);
-          return res.json(result);
-        } catch (error) {
-          console.error('Error in defaultLogin:', error.message);
-          return res.status(500).json({ message: 'Server error occurred.', user: null });
-        }
-    },
-
     async firstTimeLogin(req,res){
         const { username, role, email, user_id } = req.body;
 

@@ -25,19 +25,6 @@ const LoginService = {
         return {success: false, message: 'Login failed. Please try again.'};
     },
 
-    async fetchExternalLogin (userId, password) {
-        const loginURL = `http://web.fc.utm.my/ttms/web_man_webservice_json.cgi?entity=authentication&login=${userId}&password=${password}`;
-        try {
-          const response = await axios.get(loginURL);
-          if (!response.data || response.data.length === 0) {
-            return {success: false, message: 'Login failed. Please try again.'};
-          }
-          return { success: true, message: 'User login successful.', user: response.data[0] };
-        } catch (error) {
-          throw new Error('Error fetching external login data.');
-        }
-    },
-
     async registerUser (username, role, email, user_id) {
         const insertedUser = await UserDAO.insertUser(username, role, email, user_id);
         if (insertedUser) {

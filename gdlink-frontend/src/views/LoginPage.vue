@@ -86,14 +86,13 @@ import LoginService from '@/service/LoginService';
           if(data.loginType) {
             const data2 = await LoginService.loginWithDefaultPass(this.userId, this.password);
             const loginType = data.loginType;
-            console.log(data2.success);
-            if(data2.success){
+            if(data2 !== ''){
               if(loginType === 'default login')
                 this.handleExistingLogin(data.user);
               else if(loginType === 'first time login')
-                await this.handleFirstTimeLogin(data2.user);
+                await this.handleFirstTimeLogin(data2[0]);
             }else{
-              this.message = data2.message;
+              this.message = 'Login failed. Please try again.';
               return;
             }
           }
@@ -108,7 +107,7 @@ import LoginService from '@/service/LoginService';
         const data = await LoginService.firstTimeLogin(instance);
 
         if (data.success) {
-          sessionStorage.setItem('utmwebfc_session', JSON.stringify(data.$eluser));
+          sessionStorage.setItem('utmwebfc_session', JSON.stringify(data.user));
           this.$router.push('/');
         } 
       } catch (error) {

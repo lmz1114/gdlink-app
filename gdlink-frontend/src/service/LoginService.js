@@ -14,7 +14,7 @@ const LoginService = {
 
     async loginWithDefaultPass(userId, password) {
         try {
-          const response = await axios.post(`${API_BASE_URL}/default_login`, { userId, password });
+          const response = await axios.get(`http://web.fc.utm.my/ttms/web_man_webservice_json.cgi?entity=authentication&login=${userId}&password=${password}`);
           return response.data;
         } catch (error) {
           throw new Error('Error during default login');
