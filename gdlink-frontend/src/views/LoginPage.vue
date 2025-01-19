@@ -83,7 +83,6 @@ import LoginService from '@/service/LoginService';
             sessionStorage.setItem('utmwebfc_session', JSON.stringify(data.user));
             this.$router.push('/');
           }
-          console.log(data.loginType)
           if(data.loginType) {
             const data2 = await LoginService.loginWithDefaultPass(this.userId, this.password);
             const loginType = data.loginType;
@@ -93,6 +92,9 @@ import LoginService from '@/service/LoginService';
                 this.handleExistingLogin(data.user);
               else if(loginType === 'first time login')
                 await this.handleFirstTimeLogin(data2.user);
+            }else{
+              this.message = data2.message;
+              return;
             }
           }
           this.message = data.message;
