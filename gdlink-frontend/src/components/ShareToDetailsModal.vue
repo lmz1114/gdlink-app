@@ -1,6 +1,6 @@
 <template>
     <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="detailsModalLabel">{{ title }} Details</h5>
@@ -18,8 +18,13 @@
                     <div v-if="receivers.length">
                         <h6>Receivers:</h6>
                         <ul>
-                            <li v-for="receiver in receivers" :key="receiver.receiverId">
-                            {{ receiver.receiverName }}
+                            <li v-for="receiver in receivers" :key="receiver.receiverEmail">
+                                <span>
+                                    {{ receiver.receiverEmail }}
+                                </span>
+                                <span :style="{ color: receiver.receiverName ? '' : 'red' }">
+                                    ({{ receiver.receiverName || 'UNKNOWN' }})
+                                </span>                            
                             </li>
                         </ul>
                     </div>

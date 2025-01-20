@@ -7,15 +7,15 @@ const GroupMemberDAO = {
         try{
             const query = `SELECT 
                                 gm.group_member_id,
-                                u.name ,
+                                u.name,
                                 gm.role,
-                                gm.member_id
+                                gm.member_email
                             FROM 
                                 group_members gm
-                            JOIN 
+                            LEFT JOIN 
                                 users u 
                             ON 
-                                gm.member_id = u.user_id
+                                gm.member_email = u.email
                             WHERE 
                                 gm.group_id = ?;`;
             const rows = await conn.query(query,[groupId]);
@@ -31,11 +31,11 @@ const GroupMemberDAO = {
         }
     },
 
-    async addMember(groupId,memberId){
+    async addMember(groupId,memberEmail){
         const conn = await getConnection();
         try{
-            const query = 'INSERT INTO group_members(group_id,member_id) VALUES (?,?)';
-            const result = await conn.query(query,[groupId,memberId]);
+            const query = 'INSERT INTO group_members(group_id,member_email) VALUES (?,?)';
+            const result = await conn.query(query,[groupId,memberEmail]);
             if (result.affectedRows > 0) {
                 return { success: true, message: 'Member added successfully.' };
             } else {
@@ -97,10 +97,10 @@ const GroupMemberDAO = {
         }
     },
 
-    async getMembersIdByGroup(groupId){
+    async getMembersEmailByGroup(groupId){
         const conn = await getConnection();
         try{
-            const query = `SELECT member_id AS user_id FROM group_members WHERE group_id = ?;`;
+            const query = `SELECT member_email AS email FROM group_members WHERE group_id = ?;`;
             const rows = await conn.query(query,[groupId]);
             return rows.map(snakeToCamel);
         }catch(error){

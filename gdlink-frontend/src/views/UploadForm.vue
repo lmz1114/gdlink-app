@@ -123,9 +123,9 @@
             type="button"
             class="btn btn-outline-primary"
             @click="addReceiverField"
-            style="width:120px;"
+            style="width:150px;"
           >
-            Add User ID
+            Add User Email
           </button>
         </div>
         </div>
@@ -148,10 +148,10 @@
         <div v-if="resource.shareTo === 'specific users'" class="mb-3">
           <div v-for="(receiver, index) in resource.receivers" :key="index" class="input-group mb-2" style="width: 250px;">
             <input
-              type="text"
-              v-model="receiver.userId"
+              type="email"
+              v-model="receiver.email"
               class="form-control"
-              placeholder="Enter User ID"
+              placeholder="Enter User Email"
             />
           </div>
         </div>
@@ -200,7 +200,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           shareTo: "",
           receiverGroups: [],
           receivers: [{
-            userId:''
+            email:''
           }]
         },
         categories: [],
@@ -213,6 +213,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
     created() {
       this.resourceId = this.$route.params.resourceId;
       this.view = this.$route.meta.view;
+      console.log(this.view);
       const sessionData = sessionStorage.getItem('utmwebfc_session');
       if (sessionData) {
         const userSession = JSON.parse(sessionData);
@@ -237,7 +238,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
             semester: item.sessem.split("-")[1],
             shareTo: item.shareTo,
             receiverGroups: item.groups.map(group => group.groupId),
-            receivers: item.receivers.map(receiver => ({ userId: receiver.receiverId })),
+            receivers: item.receivers.map(receiver => ({ email: receiver.receiverEmail })),
         }));
       },
       async displayCategoryList(){
@@ -247,10 +248,21 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         const resource = await ResourcesSharingService.getMyShareLinksResourceDetails(this.resourceId);
         this.resource = this.transformData(resource)[0];
         this.previousShareTo = this.resource.shareTo;
+        console.log(this.previousShareTo);
         this.previousReceiverGroups = [...this.resource.receiverGroups];
+        console.log(this.previousReceiverGroups);
         this.previousReceivers = [...this.resource.receivers];
+        console.log(this.previousReceivers);
       },
       cancelUpload() {
+        this.clearForm();
+        if(this.view === 'edit'){
+          this.$router.push('/my_sharelinks');
+        }else{
+          this.$router.push('/');
+        }
+      },
+      clearForm() {
         this.resource = {
           link: "",
           category_id: "",
@@ -260,40 +272,37 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           semester: "1",
           shareTo: "",
           receivers: [
-            { userId: '' } 
+            { email: '' } 
           ]
         };
       },
       handleShareChange() {
       if (this.resource.shareTo !== "specific users") {
-        this.resource.receivers = [{ userId: '' }];
+        this.resource.receivers = [{ email: '' }];
       }
       if(this.resource.shareTo !== "specific groups"){
         this.resource.receiverGroups = [];
       }
     },
       addReceiverField() {
-        this.resource.receivers.push({userId:''});
+        this.resource.receivers.push({email:''});
       },
       async submitForm() {  
-        if(this.resource.receivers.length>0){
-          this.resource.receivers = this.resource.receivers
-          .filter((item) => item.userId.trim() !== "")  
-          .map((item) => {
-            item.userId = item.userId.toUpperCase(); 
-            return item;
-          });    
+        if (this.resource.receivers.length > 0) {
+          this.resource.receivers = this.resource.receivers.filter(
+            (item) => item.email.trim() !== ""
+          );
         }
         if(this.view === 'edit'){
           await this.edit();
-          this.cancelUpload();
+          this.clearForm();
           this.previousShareTo = '';
           this.previousReceiverGroups = [];
           this.previousReceivers = [];
           this.$router.push({ name: 'My ShareLinks Resource Details', params: { resourceId: this.resourceId } });
         }else{
           await this.share();
-          this.cancelUpload();
+          this.clearForm();
           this.$router.push('/my_sharelinks');
         }
       },

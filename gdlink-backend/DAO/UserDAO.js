@@ -159,7 +159,7 @@ const UserDAO = {
     async getAllLecturer(userId) {
         const conn = await getConnection();  
         try {
-            const query = 'SELECT user_id FROM users WHERE role = "Pensyarah" AND user_id != ?';
+            const query = 'SELECT email FROM users WHERE role = "Pensyarah" AND user_id != ?';
             const rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);  
         } catch (error) {
@@ -176,7 +176,7 @@ const UserDAO = {
     async getAllStudent(userId) {
         const conn = await getConnection();  // Await to ensure connection is properly established
         try {
-            const query = 'SELECT user_id FROM users WHERE role LIKE "%Pelajar%" AND user_id != ?';
+            const query = 'SELECT email FROM users WHERE role LIKE "%Pelajar%" AND user_id != ?';
             const rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);  
         } catch (error) {
@@ -193,7 +193,7 @@ const UserDAO = {
     async getAllUsers(userId) {
         const conn = await getConnection();  
         try {
-            const query = 'SELECT user_id FROM users WHERE user_id != ?;';
+            const query = 'SELECT email FROM users WHERE user_id != ?;';
             const rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);  
         } catch (error) {

@@ -17,12 +17,12 @@ const GroupMemberController = {
 
     async addMember(req,res){
         const groupId = req.params.groupId;
-        const memberId = req.body.memberId;
-        if (!memberId || memberId.trim() === '') {
+        const memberEmail = req.body.memberEmail;
+        if (!memberEmail || memberEmail.trim() === '') {
             return res.json({ success: false, message: 'Input field cannot be empty.' });
         }
         try{
-            const result = await GroupMemberService.addMember(groupId,memberId);
+            const result = await GroupMemberService.addMember(groupId,memberEmail);
             return res.json(result);
         } catch (error) {
             console.error('Controller Error:', error.message); 

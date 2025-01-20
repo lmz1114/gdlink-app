@@ -12,11 +12,11 @@ const GroupMemberService = {
             console.error('Error retrieving members:', error);
         }
     },
-    async addMember(groupId,memberId){
-        console.log(memberId);
+    async addMember(groupId,memberEmail){
+        console.log(memberEmail);
         try {
             const response = await axios.post(`${API_BASE_URL}/${groupId}/add`,{
-                memberId: memberId
+                memberEmail: memberEmail
             });
             console.log(response.data);
             return response.data;

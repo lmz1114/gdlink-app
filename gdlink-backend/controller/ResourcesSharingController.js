@@ -32,7 +32,7 @@ const ResourcesSharingController = {
         }
     },
 
-    async shareResource(req, res) { //updated to generate notification and action log
+    async shareResource(req, res) { 
         try {
             const sharerId = req.params.userId;
             const { resource } = req.body;
@@ -44,7 +44,6 @@ const ResourcesSharingController = {
             const result = await ResourcesSharingService.shareResource(sharerId, resource);
             const resourceId = result.resourceId;
 
-            // Define the notification message using refName
             const message = `${username} shared the resource "${refName}" .`;
 
             await UserLogService.createUserLog(sharerId, message);
@@ -55,7 +54,7 @@ const ResourcesSharingController = {
             const receivers = await NotificationService.getReceiversToNotify(resourceId);
 
             for (const receiver of receivers) {
-                await NotificationService.createUserNotifications(receiver.receiverId, notificationId);
+                await NotificationService.createUserNotifications(receiver.receiverEmail, notificationId);
             }
             console.log(message);
             res.status(201).json({
@@ -97,7 +96,7 @@ const ResourcesSharingController = {
 
             // Create user notifications for each receiver
             for (const receiver of receivers) {
-                await NotificationService.createUserNotifications(receiver.receiverId, notificationId);
+                await NotificationService.createUserNotifications(receiver.receiverEmail, notificationId);
             }
 
             // Notify the resource owner about the edit

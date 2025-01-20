@@ -29,22 +29,17 @@
                         <tr>
                             <th scope="col">No.</th>
                             <th scope="col">Member Name</th>
-                            <th scope="col">Member ID</th>
-                            <th scope="col">Role</th>
+                            <th scope="col">Member Email</th>
                             <th scope="col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(member, index) in groupMembers" :key="member.groupMemberId">
                             <td style="width:5%" scope="row">{{index+1}}</td>
-                            <td style="width:50%">{{ member.name }}</td>
-                            <td style="width:15%">{{ member.memberId }}</td>
-                            <td style="width:20%">
-                                <select class="form-select w-100" v-model="member.role" @change="updateMemberRole(member)">
-                                    <option value="member">Member</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </td>
+                            <td :style="{ width: '50%', color: member.name ? 'inherit' : 'red' }">
+                                {{ member.name || 'Unknown' }}
+                            </td>                           
+                            <td style="width:35%">{{ member.memberEmail }}</td>
                             <td style="width:10%">
                                 <div class="d-flex flex-row gap-3">
                                     <span @click="removeMember(member.groupMemberId)">
@@ -57,14 +52,14 @@
                 </table>
             </div>
             <div class="modal-footer">
-                  <input 
-                    type="text" 
-                    class="form-control"
-                    placeholder="Enter User ID"
-                    id="memberId" 
-                    v-model="memberId" 
-                  />
-                  <button @click="submit()" class="btn btn-outline-primary">Add Member</button>
+                <input 
+                type="email" 
+                class="form-control"
+                placeholder="Enter User Email"
+                id="memberEmail" 
+                v-model="memberEmail" 
+                />
+                <button @click="submit()" class="btn btn-outline-primary">Add Member</button>
             </div>
           </div>
         </div>
@@ -82,7 +77,7 @@ export default {
         return {
             group: [],
             groupMembers: [],
-            memberId: '',
+            memberEmail: null,
             userId: null
         };
     },
@@ -101,11 +96,11 @@ export default {
             this.resetForm();
         },
         resetForm() {
-            this.memberId = '';
+            this.memberEmail = null;
         },
         async addMember(){
             try {
-                const data = await GroupMemberService.addMember(this.group.groupId,this.memberId);
+                const data = await GroupMemberService.addMember(this.group.groupId,this.memberEmail);
                 if (data.success) {
                     SweetAlert.showSwal('Added!', data.message, 'success');
                 } else {

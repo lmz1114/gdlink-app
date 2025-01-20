@@ -21,11 +21,11 @@ const ResourceSharingService = {
             case "specific groups":
                 let rawReceivers = [];
                 for (let groupId of receiverGroups) {
-                    const groupMembers = await GroupMemberDAO.getMembersIdByGroup(groupId);
+                    const groupMembers = await GroupMemberDAO.getMembersEmailByGroup(groupId);
                     rawReceivers = [...rawReceivers, ...groupMembers];
                 }
                 receivers = rawReceivers.filter((value, index, self) =>
-                    index === self.findIndex((t) => t.userId === value.userId)
+                    index === self.findIndex((t) => t.email === value.email)
                 );
                 break;
             default:
@@ -76,6 +76,8 @@ const ResourceSharingService = {
         console.log(previousReceiverGroups.length);
         console.log(previousReceivers);
         console.log(receiverGroups.length);
+        console.log("hi");
+        console.log(receivers);
     
         try {
             let usersToAdd = [];
@@ -88,8 +90,8 @@ const ResourceSharingService = {
 
             const isReceiverSame = (arr1, arr2) => {
                 if (arr1.length !== arr2.length) return false;
-                const sorted1 = arr1.map(obj => obj.userId).sort();
-                const sorted2 = arr2.map(obj => obj.userId).sort();
+                const sorted1 = arr1.map(obj => obj.email).sort();
+                const sorted2 = arr2.map(obj => obj.email).sort();
                 return sorted1.every((value, index) => value === sorted2[index]);
             };   
             const isShareToSame = (previousShareTo === shareTo);
@@ -98,21 +100,21 @@ const ResourceSharingService = {
             console.log(isReceiversSame);
 
             if(!isShareToSame || !isReceiverGroupsSame || !isReceiversSame ){
-                let currentReceivers = await ResourcesSharingDAO.getReceiverIds(resourceId);
+                let currentReceivers = await ResourcesSharingDAO.getReceiverEmails(resourceId);
         
                 let newReceivers = await this.getReceiversToShare(shareTo, sharerId, receiverGroups, resource);
         
                 const usersToRemove = currentReceivers.filter(currentReceiver => 
-                    !newReceivers.some(newReceiver => newReceiver.userId === currentReceiver.userId)
+                    !newReceivers.some(newReceiver => newReceiver.email === currentReceiver.email)
                 );
         
-                const userIdsToRemove = usersToRemove.map(receiver => receiver.userId);
-                if (userIdsToRemove.length > 0) {
-                    await ResourcesSharingDAO.deleteSharesWithIN(resourceId, userIdsToRemove);
+                const userEmailsToRemove = usersToRemove.map(receiver => receiver.email);
+                if (userEmailsToRemove.length > 0) {
+                    await ResourcesSharingDAO.deleteSharesWithIN(resourceId, userEmailsToRemove);
                 }
         
                 usersToAdd = newReceivers.filter(newReceiver => 
-                    !currentReceivers.some(currentReceiver => currentReceiver.userId === newReceiver.userId)
+                    !currentReceivers.some(currentReceiver => currentReceiver.email === newReceiver.email)
                     );
             }
             return await ResourcesSharingDAO.editResource(resourceId, resource, isReceiverGroupsSame,previousReceiverGroups, usersToAdd);
@@ -225,9 +227,9 @@ const ResourceSharingService = {
                         });
                     }
         
-                    if (item.receiverId && item.receiverName) {
+                    if (item.receiverEmail) {
                         result.receivers.push({
-                            receiverId: item.receiverId,
+                            receiverEmail: item.receiverEmail,
                             receiverName: item.receiverName
                         });
                     }

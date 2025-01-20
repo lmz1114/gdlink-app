@@ -14,9 +14,9 @@ const GroupMemberService = {
         }
     },
 
-    async addMember(groupId,memberId){
+    async addMember(groupId,memberEmail){
         try{
-            return await GroupMemberDAO.addMember(groupId,memberId);
+            return await GroupMemberDAO.addMember(groupId,memberEmail);
         } catch (error) {
             console.error('Service Error:', error);
             return {

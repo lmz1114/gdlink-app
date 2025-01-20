@@ -3,10 +3,10 @@ const {snakeToCamel} = require('../tools/camelTransform');
 
 const ResourceSharingDAO = {
 
-    async getReceiverIds(resourceId) {
+    async getReceiverEmails(resourceId) {
         const conn = await getConnection();
         try {
-            const query = `SELECT receiver_id AS user_id FROM sharing WHERE resource_id = ?;`;
+            const query = `SELECT receiver_email AS email FROM sharing WHERE resource_id = ?;`;
             const rows = await conn.query(query, [resourceId]);
             return rows.map(snakeToCamel);
            
@@ -62,11 +62,11 @@ const ResourceSharingDAO = {
         }
     },
 
-    async deleteSharesWithIN(resourceId, userIdsToRemove) {
+    async deleteSharesWithIN(resourceId, userEmailsToRemove) {
         const conn = await getConnection();
         try {
-            const query = `DELETE FROM sharing WHERE resource_id = ? AND receiver_id IN (?)`;
-            const affectedRows = await conn.query(query, [resourceId,userIdsToRemove]);
+            const query = `DELETE FROM sharing WHERE resource_id = ? AND receiver_email IN (?)`;
+            const affectedRows = await conn.query(query, [resourceId,userEmailsToRemove]);
             console.log(affectedRows);
         } catch (error) {
             console.error('DAO Error', error);
@@ -94,7 +94,9 @@ const ResourceSharingDAO = {
                             ON 
                                 resources.category_id = category.category_id`;
             if(userIdType === 'receiver_id'){
-                query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id`
+                query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id
+                            INNER JOIN users ON sharing.receiver_email = users.email`;
+                userIdType = 'users.user_id'
             }
             query += ` WHERE ${userIdType} = ? GROUP BY category_name;`;
             let rows = await conn.query(query,[userId]);
@@ -141,11 +143,11 @@ const ResourceSharingDAO = {
                 }
             }
     
-            const sharingQuery = `INSERT INTO sharing (receiver_id, resource_id) VALUES (?,?);`;
+            const sharingQuery = `INSERT INTO sharing (receiver_email, resource_id) VALUES (?,?);`;
             for (let receiver of receivers) {
-                const sharingResult = await conn.query(sharingQuery, [receiver.userId, resourceId]);
+                const sharingResult = await conn.query(sharingQuery, [receiver.email, resourceId]);
                 if (sharingResult.affectedRows <= 0) {
-                    throw new Error(`Failed to share resource with receiver ID: ${receiver.userId}`);
+                    throw new Error(`Failed to share resource with receiver email: ${receiver.email}`);
                 }
             }
     
@@ -212,11 +214,11 @@ const ResourceSharingDAO = {
             }
     
             // Insert users to be added
-            const sharingQuery = `INSERT INTO sharing (receiver_id, resource_id) VALUES (?,?);`;
+            const sharingQuery = `INSERT INTO sharing (receiver_email, resource_id) VALUES (?,?);`;
             for (let receiver of usersToAdd) {
-                const sharingResult = await conn.query(sharingQuery, [receiver.userId, resourceId]);
+                const sharingResult = await conn.query(sharingQuery, [receiver.email, resourceId]);
                 if (sharingResult.affectedRows <= 0) {
-                    throw new Error(`Failed to share resource with receiver ID: ${receiver.userId}`);
+                    throw new Error(`Failed to share resource with receiver ID: ${receiver.email}`);
                 }
             }
     
@@ -270,7 +272,8 @@ const ResourceSharingDAO = {
                                 FROM sharing
                                 INNER JOIN resources ON resources.resource_id = sharing.resource_id
                                 INNER JOIN category ON resources.category_id = category.category_id
-                                WHERE receiver_id = ? 
+                                INNER JOIN users ON sharing.receiver_email = users.email 
+                                WHERE users.user_id = ? 
                                 AND sharing.latest_access_time >= CURDATE() - INTERVAL 7 DAY
                                 UNION 
                                 SELECT resources.latest_access_time, 
@@ -325,11 +328,13 @@ const ResourceSharingDAO = {
         const conn = await getConnection();
         try {
             const query = `SELECT resources.resource_id,resources.sessem,
-                                    category.category_name, category.color,
-                                    resources.owner,  
-                            resources.description,resources.ref_name 
+                                category.category_name, category.color,
+                                resources.owner,  
+                                resources.description,resources.ref_name 
                             FROM resources INNER JOIN sharing ON resources.resource_id = sharing.resource_id
-                            INNER JOIN category ON resources.category_id = category.category_id WHERE receiver_id = ? ORDER BY resources.shared_at DESC;`;
+                                INNER JOIN category ON resources.category_id = category.category_id
+                                INNER JOIN users ON sharing.receiver_email = users.email 
+                            WHERE users.user_id = ? ORDER BY resources.shared_at DESC;`;
             rows = await conn.query(query,[receiverId]);
             return rows.map(snakeToCamel);
         } catch (error) {
@@ -354,7 +359,9 @@ const ResourceSharingDAO = {
             let queryParams = [userId];
 
             if (userIdType === 'receiver_id') {
-                query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id`;
+                query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id
+                            INNER JOIN users ON sharing.receiver_email = users.email`;
+                userIdType = 'users.user_id';
             }
     
             query += ` INNER JOIN category ON resources.category_id = category.category_id
@@ -397,7 +404,9 @@ const ResourceSharingDAO = {
                             resources`;
 
             if (userIdType === 'receiver_id') {
-                query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id`;
+                query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id
+                            INNER JOIN users ON sharing.receiver_email = users.email`;
+                userIdType = 'users.user_id';
             }
     
             query += ` INNER JOIN category ON resources.category_id = category.category_id
@@ -436,19 +445,24 @@ const ResourceSharingDAO = {
                             resources.ref_name,
                             resources.sessem,
                             DATE_FORMAT(resources.shared_at, '%d/%m/%Y %r') AS shared_at,
-                            users.name AS sharer_name,
+                            sharer.name AS sharer_name,
                             category.category_name,
-                            category.color
+                            category.color,
+                            receiver.name AS receiver_name
                         FROM 
                             resources
                         INNER JOIN 
-                            users ON resources.sharer_id = users.user_id
+                            users AS sharer ON resources.sharer_id = sharer.user_id
                         INNER JOIN
                             category ON category.category_id = resources.category_id
                         INNER JOIN
                             sharing ON resources.resource_id = sharing.resource_id
+                        INNER JOIN
+                            users AS receiver ON sharing.receiver_email = receiver.email
                         WHERE 
-                            resources.resource_id = ? AND sharing.receiver_id = ?`;
+                            resources.resource_id = ? 
+                            AND receiver.user_id = ?;
+                        `;
                 queryParams.push(receiverId);
             } else {
                 query = `SELECT
@@ -465,7 +479,7 @@ const ResourceSharingDAO = {
                             category.color,
                             groups.group_id,
                             groups.group_name,  
-                            sharing.receiver_id,
+                            sharing.receiver_email,
                             receiver.name AS receiver_name  
                         FROM 
                             resources
@@ -482,7 +496,7 @@ const ResourceSharingDAO = {
                             sharing ON resources.resource_id = sharing.resource_id
                             AND resources.share_to = 'specific users'  
                         LEFT JOIN
-                            users AS receiver ON sharing.receiver_id = receiver.user_id  
+                            users AS receiver ON sharing.receiver_email = receiver.email  
                         WHERE 
                             resources.resource_id = ?;`;
             }
@@ -506,7 +520,11 @@ const ResourceSharingDAO = {
         try {
             const accessTime = new Date();
             if(receiverId){
-                const receiverQuery = `UPDATE sharing SET latest_access_time = ? WHERE resource_id = ? AND receiver_id = ?`;
+                const receiverQuery = `UPDATE sharing 
+                                        INNER JOIN users ON sharing.receiver_email = users.email
+                                        SET sharing.latest_access_time = ?
+                                        WHERE sharing.resource_id = ? 
+                                        AND users.user_id = ?;`;
                 await conn.query(receiverQuery, [accessTime, resourceId, receiverId]);
             }else{
                 const query = `UPDATE resources SET latest_access_time = ? WHERE resource_id = ?`;
