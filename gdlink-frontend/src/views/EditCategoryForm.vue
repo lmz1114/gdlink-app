@@ -30,9 +30,9 @@
             <div id="color-picker"></div>
           </div>
 
-                    <!-- Accessibility Options -->
+          <!-- Accessibility Options -->
           <div class="mb-3">
-            <label class="form-label">Accessibility:</label>
+            <label for="accessibility" class="form-label">Accessibility:</label>
             <div>
               <div
                 class="form-check"
@@ -44,12 +44,13 @@
                   :value="option.value"
                   v-model="formData.accessibility"
                   class="form-check-input"
-                  type="radio"
+                  type="checkbox"
                 />
                 <label :for="option.id" class="form-check-label">{{ option.label }}</label>
               </div>
             </div>
           </div>
+
 
           <!-- Action Buttons -->
           <div class="d-flex justify-content-end">
@@ -82,10 +83,9 @@ export default {
         accessibility: "",
       },
       accessibilityOptions: [
-        { id: "all", value: "All", label: "All" },
-        { id: "students", value: "Student", label: "Student" },
-        { id: "lecturers", value: "Lecturer", label: "Lecturer" },
-        { id: "office-staff", value: "Office Staff", label: "Office Staff" },
+        { id: "student", value: "student", label: "Student" },
+        { id: "lecturer", value: "lecturer", label: "Lecturer" },
+        { id: "staff", value: "staff", label: "Academic Office" },
       ],
     };
   },

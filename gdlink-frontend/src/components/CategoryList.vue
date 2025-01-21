@@ -2,12 +2,13 @@
   <div class="container">
     <div class="grid-layout">
       <div v-for="(category, index) in categories" :key="index" style="width: 180px;">
-        <CategoryBox 
-          :categoryColor="category.color"
-          :categoryName="category.name"
-          @click="viewDetails(category.categoryId)"
-        />
-      </div>
+          <CategoryBox 
+            :categoryColor="category.color"
+            :categoryName="category.categoryName"
+            :categoryAccessibility="category.accessibility"
+            @click="viewDetails(category.categoryId)"
+          />
+        </div> 
     </div>
   </div>
 </template>
@@ -35,29 +36,42 @@ export default {
 </script>
 
 <style scoped>
+:root{
+  --box-width: 170px;
+}
+.container{
+  display:flex;
+  justify-content: center;
+}
+
 .grid-layout {
-  display: grid;
-  grid-column-gap: 20px;
-  grid-row-gap: 20px;
-  margin: 0 0 20px 0;
-  padding: 0 1px;
+    display: grid;
+    grid-template-columns: repeat(1, var(--box-width));
+    grid-column-gap: 23px;
+    grid-row-gap: 23px;
 }
 
-@media (min-width: 576px) {
-  .grid-layout {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  }
+@media (min-width: 708px) {
+    .grid-layout {
+        grid-template-columns: repeat(2, var(--box-width));
+    }
 }
 
-@media (min-width: 980px) {
-  .grid-layout {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  }
+@media (min-width: 900px) {
+    .grid-layout {
+        grid-template-columns: repeat(3, var(--box-width));
+    }
 }
 
-@media (min-width: 1047px) {
-  .grid-layout {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 180px));
-  }
+@media (min-width: 1095px) {
+    .grid-layout {
+        grid-template-columns: repeat(4, var(--box-width));
+    }
+}
+
+@media (min-width: 1400px) {
+    .grid-layout {
+        grid-template-columns: repeat(6, var(--box-width));
+    }
 }
 </style>

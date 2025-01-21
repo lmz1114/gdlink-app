@@ -14,7 +14,7 @@
                     @filtersemester="updateSemester"
                     class="float-start w-100 mb-3"
                 />
-                
+                <p style="margin:15px"><strong>Number of resources: {{ allResources.length }} </strong></p>
                 <table class="table table-striped table-bordered smaller-font">
                     <thead class="text-center align-middle">
                         <tr>

@@ -1,7 +1,7 @@
 <template>
   <div class="container" v-if="displayType === 'card'">
     <div class="grid-layout">
-        <div box-width="180px" v-for="(resource, index) in resources" :key="index"> 
+        <div v-for="(resource, index) in resources" :key="index"> 
           <ResourceBox 
             @click="viewDetails(resource.resourceId, resource.resourceType)"
             :categoryColor="resource.color"

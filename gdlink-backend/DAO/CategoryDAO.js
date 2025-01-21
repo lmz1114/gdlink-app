@@ -7,6 +7,11 @@ const CategoryDAO = {
         try{
             const query = 'SELECT * FROM CATEGORY';
             const rows = await conn.query(query);
+
+            for (const row of rows) {
+                row.accessibility = row.accessibility.split(',');
+            }
+            
             return rows.map(snakeToCamel);
         }catch(error){
             console.error('Error occurred while retrieving categories:', error);
@@ -26,7 +31,7 @@ const CategoryDAO = {
             console.log(categoryName, color, accessibility);
             const query = `
                 INSERT INTO category (category_name, color, accessibility)
-                VALUES (?, ?, ?)
+                VALUES (?, ?, ?);
             `;
             await conn.query(query, [categoryName, color, accessibility]);
             return { success: true };
@@ -107,6 +112,13 @@ const CategoryDAO = {
             if (rows.length === 0) {
                 console.log('No category found in database for ID:', categoryId);
                 return null; 
+            }
+
+            if(rows[0].accessibility){
+                rows[0].accessibility = rows[0].accessibility.split(',');
+                console.log(rows);
+            }else{
+                rows[0].accessibility = [];
             }
             return rows; 
         } catch (error) {

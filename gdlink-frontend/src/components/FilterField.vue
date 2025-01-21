@@ -8,11 +8,11 @@
           </div>
         </div>
         <ul class="list-items" v-show="dropdowns.category">
-          <li class="items" v-for="(category,index) in categories" :key="category" :id="'item-category-' + index" :value="category"  @click="selectCheck(selectedCategory,'category',category,index)">
+          <li class="items" v-for="(category,index) in categories" :key="category" :id="'item-category-' + index" :value="category.categoryName"  @click="selectCheck(selectedCategory,'category',category.categoryName,index)">
             <span class="checkbox">
               <i class="bi bi-check check-icon"></i>
             </span>
-            <span class="item-text"> {{ category }} </span>
+            <span class="item-text"> {{ category.categoryName }} </span>
           </li>
         </ul>
       </div>
@@ -37,12 +37,14 @@
   </template>
   
   <script>
+import CategoryService from '@/service/CategoryService';
+
   export default {
     data() {
       return {
         selectedCategory: [],
         selectedSemester: [],
-        categories: ["Course Files", "Meeting", "Workshop"], 
+        categories: [], 
         semesters: ["2022/2023-1", "2022/2023-2", "2023/2024-1", "2023/2024-2","2024/2025-1"], 
         dropdowns: {
           category: false,
@@ -53,6 +55,7 @@
 
     mounted() {
       document.addEventListener('click', this.handleClickOutside);
+      this.loadCategories();
     },
 
     beforeUnmount() {
@@ -60,6 +63,9 @@
     },
 
     methods:{
+      async loadCategories(){
+        this.categories = await CategoryService.getCategoryList();
+      },
       toggleDropdown(type) {
         this.dropdowns[type] = !this.dropdowns[type];
       },

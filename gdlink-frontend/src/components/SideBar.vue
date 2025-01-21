@@ -87,6 +87,10 @@ export default {
         icon: "mysharelinks",
         role: "Admin",
       },
+      { name: 'Category', 
+        link: '/admin/category', 
+        icon: 'category', 
+        role: 'Admin' },
       {
         name: "User Log",
         link: "/admin/UserLog",

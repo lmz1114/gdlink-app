@@ -10,6 +10,11 @@
       <hr>
       <div class="card-body" style="width: 180px;">
         <h5 class="card-title"><strong>{{ categoryName }}</strong></h5>
+        <ul style="list-style-type: none; padding: 0; margin: 0;">
+          <li style="font-size: 12px;" v-for="(accessibility, index) in transformedAccessibility" :key="index">
+            {{ accessibility }}
+          </li>
+        </ul>
       </div>
     </div>
 </template>
@@ -20,6 +25,7 @@
     props: {
       categoryColor: { type: String, required: true }, 
       categoryName: { type: String, required: true },
+      categoryAccessibility: { type: Array, required: true },
     },
     data() {
       return {
@@ -32,6 +38,20 @@
           willChange: 'transform',
           transform: this.transform,
         };
+      },
+      transformedAccessibility() {
+        return this.categoryAccessibility.map(item => {
+          switch (item) {
+            case 'staff':
+              return 'Academic Office';
+            case 'student':
+              return 'Student';
+            case 'lecturer':
+              return 'Lecturer';
+            default:
+              return item;
+          }
+        });
       },
     },
     methods: {

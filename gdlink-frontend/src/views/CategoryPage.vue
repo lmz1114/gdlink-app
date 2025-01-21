@@ -1,7 +1,7 @@
 <template>
   <DefaultLayout>
     <template #default>
-      <section class="border rounded shadow-sm bg-white vh-100 w-100 p-4">
+      <div class="border rounded shadow-sm bg-white w-100 min-1000 p-4">
         <div class="d-flex mb-4">
           <svg class="me-3" width="2.5em" height="2.5em" viewBox="0 0 125 126" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M74.2437 115.267V79.1777C74.2437 77.1156 75.8856 75.4443 77.9115 75.4443H113.367C115.393 75.4443 117.035 77.1156 117.035 79.1777V115.267C117.035 117.329 115.393 119 113.367 119H77.9115C75.8856 119 74.2437 117.329 74.2437 115.267Z" stroke="#6700BB" stroke-width="13.9547"/>
@@ -13,12 +13,13 @@
         </div>
         <!-- Add category button -->
         <button class="btn btn-primary" @click="addCategory" style="width:auto; margin:15px">Add Category</button>
+        <p class="float-end" style="margin:15px"><strong>Number of categories: {{ categories.length }} </strong></p>
         <!-- Category list -->
         <CategoryList
           :categories="categories"
           @viewDetails="viewDetails"
         />
-      </section>
+      </div>
     </template>
   </DefaultLayout>
 </template>
@@ -70,30 +71,12 @@ export default {
 </script>
 
 <style scoped>
-.categorylist-container{
-  display: flex;
-  justify-content: space-between;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 1em;
-}
 
-.table {
-  width: 100%;
-  margin-bottom: 1rem;
-  color: #212529;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  padding: 0.75rem;
-  vertical-align: top;
-  border: 1px solid #dee2e6;
-}
-.table th {
-  background-color: #f8f9fa;
-}
 .btn {
   padding: 0.375rem 0.75rem;
+}
+
+.min-1000{
+    min-height:1000px;
 }
 </style>

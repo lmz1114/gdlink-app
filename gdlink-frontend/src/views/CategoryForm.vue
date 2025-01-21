@@ -44,7 +44,7 @@
                   :value="option.value"
                   v-model="formData.accessibility"
                   class="form-check-input"
-                  type="radio"
+                  type="checkbox"
                 />
                 <label :for="option.id" class="form-check-label">{{ option.label }}</label>
               </div>
@@ -78,13 +78,12 @@ export default {
       formData: {
         categoryName: "",
         color: "#ffffff",
-        accessibility: "All",
+        accessibility: ["student","lecturer","staff"],
       },
       accessibilityOptions: [
-        { id: "all", value: "All", label: "All" },
-        { id: "students", value: "Student", label: "Student" },
-        { id: "lecturers", value: "Lecturer", label: "Lecturer" },
-        { id: "office-staff", value: "Office Staff", label: "Office Staff" },
+        { id: "student", value: "student", label: "Student" },
+        { id: "lecturer", value: "lecturer", label: "Lecturer" },
+        { id: "staff", value: "staff", label: "Academic Office" },
       ],
     };
   },
@@ -93,8 +92,6 @@ export default {
   },
   mounted() {
     this.initializeColorPicker();
-    // this.formData.accessibility = "All"; // Force default value
-    // console.log('Forced accessibility to:', this.formData.accessibility);
   },
   methods: {
     loadUserSession() {
