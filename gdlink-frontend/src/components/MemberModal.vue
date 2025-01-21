@@ -52,12 +52,13 @@
                 </table>
             </div>
             <div class="modal-footer">
+                <small v-if="errors.memberEmail" class="text-danger">{{ errors.memberEmail }}</small>
                 <input 
-                type="email" 
-                class="form-control"
-                placeholder="Enter User Email"
-                id="memberEmail" 
-                v-model="memberEmail" 
+                    type="text" 
+                    class="form-control"
+                    placeholder="Enter User Email"
+                    id="memberEmail" 
+                    v-model="memberEmail" 
                 />
                 <button @click="submit()" class="btn btn-outline-primary">Add Member</button>
             </div>
@@ -78,10 +79,31 @@ export default {
             group: [],
             groupMembers: [],
             memberEmail: null,
-            userId: null
+            userId: null,
+            errors: {
+                memberEmail: ''
+            }
         };
     },
     methods:{
+        validateEmail() {
+            this.errors = {
+                memberEmail: ''
+            };
+
+            let isValid = true;
+
+            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!this.memberEmail) {
+                this.errors.memberEmail = "Email is required.";
+                isValid = false;
+                } else if (!emailPattern.test(this.memberEmail)) {
+                this.errors.memberEmail = "Please enter a valid email address.";
+                isValid = false;
+            }
+
+            return isValid;
+        },
         openModalForMembers(group) {
             this.group = group;
             this.displayMemberList();
@@ -91,9 +113,11 @@ export default {
             this.groupMembers = await GroupMemberService.getMemberList(this.group.groupId);
         },
         async submit(){
-            await this.addMember();
-            this.displayMemberList();
-            this.resetForm();
+            if(this.validateEmail()){
+                await this.addMember();
+                this.displayMemberList();
+                this.resetForm();
+            }
         },
         resetForm() {
             this.memberEmail = null;
