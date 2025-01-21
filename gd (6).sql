@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 20, 2025 at 11:27 AM
+-- Generation Time: Jan 21, 2025 at 09:37 AM
 -- Server version: 11.5.2-MariaDB
 -- PHP Version: 8.0.30
 
@@ -30,17 +30,23 @@ SET time_zone = "+00:00";
 CREATE TABLE `category` (
   `category_id` int(11) NOT NULL,
   `category_name` varchar(30) DEFAULT NULL,
-  `color` varchar(10) DEFAULT NULL
+  `color` varchar(10) DEFAULT NULL,
+  `accessibility` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `category`
 --
 
-INSERT INTO `category` (`category_id`, `category_name`, `color`) VALUES
-(1, 'Course Files', '#008000'),
-(2, 'Meeting', '#FF0000'),
-(3, 'Workshop', '#0504AA');
+INSERT INTO `category` (`category_id`, `category_name`, `color`, `accessibility`) VALUES
+(1, 'Course Files', '#008000', 'staff'),
+(2, 'Meeting', '#FF0000', 'lecturer,staff'),
+(3, 'Workshop', '#0504AA', 'lecturer,staff'),
+(4, 'Research', '#ff1284', 'staff,lecturer,student'),
+(5, 'Timetable', '#d36eff', 'staff'),
+(6, 'Internship', '#575cff', 'student,lecturer,staff'),
+(7, 'Course Coordination', '#47ffff', 'lecturer'),
+(8, 'Event', '#8a1cff', 'student,lecturer,staff');
 
 -- --------------------------------------------------------
 
@@ -66,6 +72,13 @@ CREATE TABLE `groups` (
   `creator` varchar(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `groups`
+--
+
+INSERT INTO `groups` (`group_id`, `group_name`, `creator`, `created_at`) VALUES
+(476, 'ip-s06', 'A22EC0062', '2025-01-20 17:54:24');
 
 -- --------------------------------------------------------
 
@@ -105,6 +118,13 @@ CREATE TABLE `notifications` (
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`notification_id`, `resource_id`, `message`, `created_at`) VALUES
+(148, 60, 'TONI ANWAR shared the resource \"Testing\" .', '2025-01-21 08:33:12');
+
 -- --------------------------------------------------------
 
 --
@@ -125,6 +145,13 @@ CREATE TABLE `resources` (
   `share_to` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
+--
+-- Dumping data for table `resources`
+--
+
+INSERT INTO `resources` (`resource_id`, `category_id`, `ref_name`, `sessem`, `description`, `owner`, `link`, `sharer_id`, `shared_at`, `latest_access_time`, `share_to`) VALUES
+(60, 2, 'Testing', '2024/2025-1', 'Testing', 'Ali', 'https://drive.google.com/drive/folders/???', '12085', '2025-01-21 16:33:12', NULL, 'all');
+
 -- --------------------------------------------------------
 
 --
@@ -136,6 +163,18 @@ CREATE TABLE `sharing` (
   `resource_id` int(11) NOT NULL,
   `latest_access_time` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `sharing`
+--
+
+INSERT INTO `sharing` (`receiver_email`, `resource_id`, `latest_access_time`) VALUES
+('admin@gmail.com', 60, NULL),
+('kewheng@graduate.utm.my ', 60, NULL),
+('kuantong@graduate.utm.my ', 60, NULL),
+('kwekcong@graduate.utm.my ', 60, NULL),
+('leowhong@graduate.utm.my ', 60, NULL),
+('msmd2@live.utm.my', 60, NULL);
 
 -- --------------------------------------------------------
 
@@ -154,6 +193,19 @@ CREATE TABLE `users` (
   `is_pass_changed` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`user_id`, `password`, `email`, `role`, `picture`, `created_at`, `name`, `is_pass_changed`) VALUES
+('12085', NULL, 'tonianwar@utm.my', 'Pensyarah', NULL, '2025-01-21 08:26:12', 'TONI ANWAR', 0),
+('A16CS4016', NULL, 'msmd2@live.utm.my', 'Pelajar FSKSM', NULL, '2025-01-19 05:58:19', 'MD MIRZA SHIHAB', 0),
+('A22EC0058', NULL, 'kewheng@graduate.utm.my ', 'Pelajar FSKSM', NULL, '2024-12-15 23:29:09', 'KEW JIAN HENG', 0),
+('A22EC0062', '$2b$10$wQ81gfKLY5SySfvIoCpuZ.zjT4EqyzbSAyl16FiZBd58iepbgi1oi', 'kuantong@graduate.utm.my ', 'Pelajar FSKSM', '1737033268038-profile-pic-A22EC0062.png', '2024-12-17 07:44:41', 'KUAN JI TONG', 1),
+('A22EC0067', '$2b$10$fFeN4.Y5eK02hmgKXjSIGeJz9Rk0e/CaVV6txlbrETc2wcsmCWJVq', 'leowhong@graduate.utm.my ', 'Pelajar FSKSM', NULL, '2024-12-20 01:41:06', 'LEOW YAN HONG', 1),
+('A22EC0122', NULL, 'kwekcong@graduate.utm.my ', 'Pelajar FSKSM', NULL, '2024-12-15 23:24:23', 'KWEK JIA CONG', 0),
+('ADMIN', '$2b$10$DeXV14ZI/7DZwzbyXVVm1.6iOG8DEmKsGTjgUnfpjqSs4tbspLB3O', 'admin@gmail.com', 'Admin', '1737032662575-profile-pic-ADMIN.png', '2025-01-02 05:58:12', 'Admin', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -167,6 +219,23 @@ CREATE TABLE `user_log` (
   `action_time` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
+--
+-- Dumping data for table `user_log`
+--
+
+INSERT INTO `user_log` (`log_id`, `user_id`, `action`, `action_time`) VALUES
+(115, 'A22EC0067', 'LEOW YAN HONG logged out from the system', '2025-01-20 21:34:43'),
+(116, 'A22ec0067', 'LEOW YAN HONG logged into the system', '2025-01-20 21:34:48'),
+(117, 'A22EC0062', 'KUAN JI TONG logged into the system', '2025-01-20 22:25:18'),
+(118, 'A22EC0062', 'KUAN JI TONG logged out from the system', '2025-01-21 04:05:52'),
+(119, 'Admin', 'Admin logged into the system', '2025-01-21 04:05:57'),
+(120, 'Admin', 'Admin logged into the system', '2025-01-21 15:33:45'),
+(121, 'ADMIN', 'Admin logged out from the system', '2025-01-21 16:24:09'),
+(122, 'A22EC0062', 'KUAN JI TONG logged into the system', '2025-01-21 16:24:13'),
+(123, 'A22EC0062', 'KUAN JI TONG logged out from the system', '2025-01-21 16:26:03'),
+(124, '12085', 'TONI ANWAR registered to the system', '2025-01-21 16:26:12'),
+(125, '12085', 'TONI ANWAR shared the resource \"Testing\" .', '2025-01-21 16:33:12');
+
 -- --------------------------------------------------------
 
 --
@@ -178,6 +247,18 @@ CREATE TABLE `user_notification` (
   `notification_id` int(11) NOT NULL,
   `read_status` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `user_notification`
+--
+
+INSERT INTO `user_notification` (`user_email`, `notification_id`, `read_status`) VALUES
+('admin@gmail.com', 148, 0),
+('kewheng@graduate.utm.my ', 148, 0),
+('kuantong@graduate.utm.my ', 148, 0),
+('kwekcong@graduate.utm.my ', 148, 0),
+('leowhong@graduate.utm.my ', 148, 0),
+('msmd2@live.utm.my', 148, 0);
 
 --
 -- Indexes for dumped tables
@@ -271,13 +352,13 @@ ALTER TABLE `user_notification`
 -- AUTO_INCREMENT for table `category`
 --
 ALTER TABLE `category`
-  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `groups`
 --
 ALTER TABLE `groups`
-  MODIFY `group_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `group_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=483;
 
 --
 -- AUTO_INCREMENT for table `group_members`
@@ -289,19 +370,19 @@ ALTER TABLE `group_members`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
+  MODIFY `notification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
 
 --
 -- AUTO_INCREMENT for table `resources`
 --
 ALTER TABLE `resources`
-  MODIFY `resource_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `resource_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `user_log`
 --
 ALTER TABLE `user_log`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
 
 --
 -- Constraints for dumped tables
