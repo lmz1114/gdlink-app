@@ -13,6 +13,25 @@ const SweetAlert = {
         });
     },
 
+    async showConfirmDialog({
+        confirmTitle = 'Are you sure?',
+        confirmText = 'Do you want to continue?',
+        confirmButtonText = 'Yes',
+        cancelButtonText = 'No'
+    }) {
+        const result = await Swal.fire({
+            title: confirmTitle,
+            text: confirmText,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: cancelButtonText,
+        });
+        return result.isConfirmed;
+    },
+
     async deleteSwal({
         confirmTitle = 'Are you sure?',
         confirmText = 'This action will permanently delete the item.',

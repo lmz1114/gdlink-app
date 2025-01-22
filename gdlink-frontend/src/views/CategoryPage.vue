@@ -50,7 +50,7 @@ export default {
   },
   methods: {
     async addCategory() {
-      this.$router.push({ name: 'CategoryForm' });
+      this.$router.push({ name: 'Category Create Form'});
     },
 
     async displayCategoryList() {
@@ -64,7 +64,7 @@ export default {
     },
     viewDetails(id) {
       console.log("Category ID:", id);
-      this.$router.push({ name: 'CategoryDetails', params: { categoryId: id } });
+      this.$router.push({ name: 'Category Edit Form', params: { categoryId: id } });
     },
   },
 };

@@ -36,11 +36,6 @@
             </div>
           </div>
 
-          <div class="mb-3">
-            <input type="checkbox" id="rmbMe" name="rmbMe" value="rmbMe">
-            <label for="rmbMe" class="ms-1 move-middle">Remember Me</label>
-          </div>
-
           <button type="submit" class="btn btn-red text-white w-100"><b>Login</b></button>
         </form>
       </div>
@@ -50,6 +45,7 @@
 
 <script>
 import LoginService from '@/service/LoginService';
+import UserLogService from '@/service/UserLogService';
 
  export default {
     data() {
@@ -81,7 +77,11 @@ import LoginService from '@/service/LoginService';
 
           if(data.success){
             sessionStorage.setItem('utmwebfc_session', JSON.stringify(data.user));
-            this.$router.push('/');
+            if(data.user.role === 'Admin'){
+              this.$router.push('/admin/AllResources');
+            }else{
+              this.$router.push('/');
+            }
           }
           if(data.loginType) {
             const data2 = await LoginService.loginWithDefaultPass(this.userId, this.password);
@@ -97,6 +97,7 @@ import LoginService from '@/service/LoginService';
             }
           }
           this.message = data.message;
+          this.resetForm();
         } catch (error) {
           this.message = 'Error fetching data.';
           console.error(error);
@@ -108,17 +109,30 @@ import LoginService from '@/service/LoginService';
 
         if (data.success) {
           sessionStorage.setItem('utmwebfc_session', JSON.stringify(data.user));
-          this.$router.push('/');
+          if(data.role === 'Admin'){
+            this.$router.push('/admin/AllResources');
+          }else{
+            this.$router.push('/');
+          }
         } 
       } catch (error) {
         this.message = 'Error occurred.';
         console.error(error);
       }
     },
-    handleExistingLogin(user) {
+    async handleExistingLogin(user) {
       sessionStorage.setItem('utmwebfc_session', JSON.stringify(user));
-      this.$router.push('/');
-  }
+      await UserLogService.createUserLog(this.userId, `${user.name} logged into the system`);
+      if(user.role === 'Admin'){
+        this.$router.push('/admin/AllResources');
+      }else{
+        this.$router.push('/');
+      }
+    },
+    resetForm(){
+      this.userId='';
+      this.password='';
+    }
 }
 
   }

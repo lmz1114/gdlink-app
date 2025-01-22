@@ -21,6 +21,8 @@ router.delete('/delete/:userId/:resourceId', ResourcesSharingController.deleteRe
 router.put('/edit/:userId/:resourceId', ResourcesSharingController.editResource)
 
 router.get('/', ResourcesSharingController.getAllResources); 
+router.post('/resource_management/filter', ResourcesSharingController.getFilteredAllResources);
+router.post('/resource_management/search', ResourcesSharingController.getSearchedAllResources);
 
 
 module.exports = router;

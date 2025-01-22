@@ -16,19 +16,6 @@
           />
           <small v-if="errors.link" class="text-danger">{{ errors.link }}</small>
         </div>
-
-        <!-- Owner -->
-        <div class="mb-3">
-          <label for="owner" class="form-label">Owner:</label>
-          <input
-            type="text"
-            id="owner"
-            v-model="resource.owner"
-            class="form-control"
-            placeholder="Enter the owner"
-          />
-          <small v-if="errors.owner" class="text-danger">{{ errors.owner }}</small>
-        </div>
   
         <!-- Category Dropdown -->
         <div class="mb-3">
@@ -111,7 +98,7 @@
             v-model="resource.shareTo"
             class="form-select me-2"
             @click="handleShareChange">
-            <option value="" selected>None</option>
+            <option value="none" selected>None</option>
             <option value="all">All</option>
             <option value="lecturers">All Lecturers</option>
             <option value="students">All Students</option>
@@ -197,16 +184,13 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         resource: {
           link: "",
           categoryId: "",
-          owner: "",
           refName: "",
           description: "",
           session: "2024/2025",
           semester: "1",
-          shareTo: "",
+          shareTo: "none",
           receiverGroups: [],
-          receivers: [{
-            email:''
-          }]
+          receivers: []
         },
         categories: [],
         groups: [],
@@ -216,23 +200,16 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         errors: {},
       };
     },
-    created() {
-      this.resourceId = this.$route.params.resourceId;
-      this.view = this.$route.meta.view;
-      console.log(this.view);
-      const sessionData = sessionStorage.getItem('utmwebfc_session');
-      if (sessionData) {
-        const userSession = JSON.parse(sessionData);
-        this.userId = userSession.user_id;
-        this.role = userSession.role;
-      }
-        this.displayCategoryList();
-        this.getGroupData();
-      if(this.view === 'edit'){
-        this.getResourceData();
-      }
-      this.activeTab = 'My ShareLinks'
+    async created() {
+      await this.initializeData();
     },
+    watch: {
+      async '$route'() {
+        this.resetData();
+        await this.initializeData();
+      },
+    },
+    
     computed:{
       computedCategories(){
         if(this.role === 'Academic Office'){
@@ -251,6 +228,54 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
       }
     },
     methods: {
+      resetData() {
+        this.view = null;
+        this.activeTab = null;
+        this.userId = null;
+        this.role = null;
+        this.resourceId = null;
+        this.resource = {
+          link: "",
+          categoryId: "",
+          refName: "",
+          description: "",
+          session: "2024/2025",
+          semester: "1",
+          shareTo: "none",
+          receiverGroups: [],
+          receivers: []
+        };
+        this.categories = [];
+        this.groups = [];
+        this.previousShareTo = '';
+        this.previousReceiverGroups = '';
+        this.previousReceivers = '';
+        this.errors = {};
+      },
+      async initializeData() {
+        this.resourceId = this.$route.params.resourceId;
+        this.view = this.$route.meta.view;
+        console.log(this.view);
+
+        const sessionData = sessionStorage.getItem('utmwebfc_session');
+        if (sessionData) {
+          const userSession = JSON.parse(sessionData);
+          this.userId = userSession.user_id;
+          this.role = userSession.role;
+        }
+
+        await this.displayCategoryList();
+        await this.getGroupData();
+
+        if (this.view === 'edit') {
+          await this.getResourceData();
+        }
+
+        this.activeTab = 'My ShareLinks';
+        if (this.role === 'Admin') {
+          this.activeTab = 'Resource Management';
+        }
+      },
       validateForm() {
         this.errors = {}; // Clear existing errors
 
@@ -259,11 +284,6 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           this.errors.link = 'Link is required.';
         } else if (!/^https?:\/\/.+\..+/.test(this.resource.link)) {
           this.errors.link = 'Enter a valid URL.';
-        }
-
-        // Validate Owner
-        if (!this.resource.owner) {
-          this.errors.owner = 'Owner is required.';
         }
 
         // Validate Category
@@ -301,7 +321,6 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         return inputData.map(item => ({
             link: item.link,
             categoryId: item.categoryId,
-            owner: item.owner,
             refName: item.refName,
             description: item.description,
             session: item.sessem.split("-")[0],
@@ -319,9 +338,8 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         this.resource = this.transformData(resource)[0];
         this.previousShareTo = this.resource.shareTo;
         console.log(this.previousShareTo);
-        this.previousReceiverGroups = [...this.resource.receiverGroups];
-        console.log(this.previousReceiverGroups);
-        this.previousReceivers = [...this.resource.receivers];
+        this.previousReceiverGroups = JSON.parse(JSON.stringify(this.resource.receiverGroups)); // Deep copy
+        this.previousReceivers = JSON.parse(JSON.stringify(this.resource.receivers));
         console.log(this.previousReceivers);
       },
       cancelUpload() {
@@ -347,12 +365,15 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         };
       },
       handleShareChange() {
-      if (this.resource.shareTo !== "specific users") {
-        this.resource.receivers = [{ email: '' }];
-      }
-      if(this.resource.shareTo !== "specific groups"){
-        this.resource.receiverGroups = [];
-      }
+        if (this.resource.shareTo === "specific users") {
+          this.resource.receivers = [{ email: '' }];
+        }
+        if (this.resource.shareTo !== "specific users") {
+          this.resource.receivers = [];
+        }
+        if(this.resource.shareTo !== "specific groups"){
+          this.resource.receiverGroups = [];
+        }
     },
       addReceiverField() {
         this.resource.receivers.push({email:''});

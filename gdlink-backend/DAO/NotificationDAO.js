@@ -19,7 +19,7 @@ const NotificationDAO = {
     async getReceiversToNotify(resourceId) {
         const conn = await getConnection();
         try {
-            const query = `SELECT receiver_email FROM sharing WHERE resource_id = ?;`;
+            const query = `SELECT receiver_email AS email FROM sharing WHERE resource_id = ?;`;
             const rows = await conn.query(query, [resourceId]);
             return rows.map(snakeToCamel);
         } catch (error) {
@@ -33,12 +33,15 @@ const NotificationDAO = {
     async getSharerToNotify(resourceId) {
         const conn = await getConnection();
         try {
-            const query = 'SELECT sharer_id FROM resources WHERE resource_id = ?';
+            const query = `SELECT u.email AS email, r.sharer_id AS id
+                            FROM resources r
+                            JOIN users u ON r.sharer_id = u.user_id
+                            WHERE r.resource_id = ?;`;
             const rows = await conn.query(query, [resourceId]);
 
             if (rows && rows.length > 0) {
                 const sharer = snakeToCamel(rows[0]); 
-                return sharer.sharerId; 
+                return sharer; 
             }
             return '';
         } catch (error) {
@@ -67,11 +70,11 @@ const NotificationDAO = {
         const conn = await getConnection();
         try {
             const query = `
-                SELECT n.notification_id, n.message, n.created_at, un.read_status
+                SELECT n.notification_id, n.message, n.created_at, un.read_status, n.resource_id
                 FROM notifications n INNER JOIN user_notification un
                 ON n.notification_id = un.notification_id
                 INNER JOIN users u ON un.user_email = u.email
-                WHERE u.user_id = ? ORDER BY n.created_at DESC`;
+                WHERE u.user_id = ? ORDER BY un.read_status ASC, n.created_at DESC, n.notification_id DESC`;
             rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);
         } catch (error) {

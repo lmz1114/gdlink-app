@@ -23,7 +23,7 @@ const CategoryController = {
             if (result.error) {
                 return res.status(400).json(result);
             }
-            res.status(201).json({ message: 'Category created successfully!' });
+            return res.json(result);
         } catch (error) {
             console.error('Controller Error:', error.message);
             res.status(500).json({
@@ -37,22 +37,9 @@ const CategoryController = {
         try {
             const { categoryId } = req.params;
             const { categoryName, color, accessibility } = req.body;
-
-            console.log('Request body:', req.body);
-            console.log('Request params:', req.params);
     
-            if (!categoryId) {
-                return res.status(400).json({ message: 'Category ID is required.' });
-            }
-            if (!categoryName || !color ) {
-                return res.status(400).json({ 
-                    message: 'All fields (category name, color) are required.',
-                    received: req.body,
-                });
-            }
-    
-            const updatedCategory = await CategoryService.updateCategory(categoryId, categoryName, color, accessibility);
-            res.status(200).json(updatedCategory);
+            const result = await CategoryService.updateCategory(categoryId, categoryName, color, accessibility);
+            return res.json(result);
         } catch (error) {
             console.error('Error updating category:', error.message);
             res.status(500).json({ message: 'Failed to update category.' });

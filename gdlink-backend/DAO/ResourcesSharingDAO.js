@@ -121,11 +121,11 @@ const ResourceSharingDAO = {
     async shareResource(sharerId, resource, receivers) {
         const conn = await getConnection();
         try {
-            const { categoryId, refName, session, semester, description, owner, link, shareTo, receiverGroups } = resource;
+            const { categoryId, refName, session, semester, description, link, shareTo, receiverGroups } = resource;
             const sessem = session + '-' + semester;
     
-            const query = 'INSERT INTO resources (category_id, ref_name, sessem, description, owner, link, share_to, sharer_id) VALUES (?,?,?,?,?,?,?,?)';
-            const result = await conn.query(query, [categoryId, refName, sessem, description, owner, link, shareTo, sharerId]);
+            const query = 'INSERT INTO resources (category_id, ref_name, sessem, description, link, share_to, sharer_id) VALUES (?,?,?,?,?,?,?)';
+            const result = await conn.query(query, [categoryId, refName, sessem, description, link, shareTo, sharerId]);
     
             const resourceId = Number(result.insertId);
     
@@ -171,7 +171,7 @@ const ResourceSharingDAO = {
     async editResource(resourceId, resource, isReceiverGroupsSame, previousReceiverGroups, usersToAdd) {
         const conn = await getConnection();
         try {
-            const { categoryId, refName, session, semester, description, owner, link, shareTo, receiverGroups } = resource;
+            const { categoryId, refName, session, semester, description, link, shareTo, receiverGroups } = resource;
             const sessem = session + '-' + semester;
     
             const query = `UPDATE resources
@@ -180,13 +180,12 @@ const ResourceSharingDAO = {
                                 ref_name = ?, 
                                 sessem = ?, 
                                 description = ?, 
-                                owner = ?, 
                                 link = ?, 
                                 shared_at = NOW(), 
                                 share_to = ?
                             WHERE resource_id = ?;`;
             
-            const result = await conn.query(query, [categoryId, refName, sessem, description, owner, link, shareTo, resourceId]);
+            const result = await conn.query(query, [categoryId, refName, sessem, description, link, shareTo, resourceId]);
             
             // Check if any row was affected by the update
             if (result.affectedRows <= 0) {
@@ -308,8 +307,8 @@ const ResourceSharingDAO = {
         try {
             const query = `SELECT resources.resource_id,resources.sessem,
                                     category.category_name, category.color,
-                                    resources.owner,  
-                            resources.description,resources.ref_name 
+                            resources.description,resources.ref_name,
+                            resources.share_to
                             FROM resources INNER JOIN category ON resources.category_id = category.category_id WHERE sharer_id = ? ORDER BY shared_at DESC;`;
             rows = await conn.query(query,[sharerId]);
             return rows.map(snakeToCamel);
@@ -329,8 +328,7 @@ const ResourceSharingDAO = {
         try {
             const query = `SELECT resources.resource_id,resources.sessem,
                                 category.category_name, category.color,
-                                resources.owner,  
-                                resources.description,resources.ref_name 
+                                resources.description,resources.ref_name
                             FROM resources INNER JOIN sharing ON resources.resource_id = sharing.resource_id
                                 INNER JOIN category ON resources.category_id = category.category_id
                                 INNER JOIN users ON sharing.receiver_email = users.email 
@@ -353,10 +351,14 @@ const ResourceSharingDAO = {
         try {
             let query = `SELECT resources.resource_id,resources.sessem,
                             category.category_name, category.color,
-                            resources.owner,   
-                            resources.description,resources.ref_name 
-                            FROM resources`;
+                            resources.description,resources.ref_name,resources.share_to`;
             let queryParams = [userId];
+
+            if (userIdType === 'receiver_id') {
+                query += ` ,users.name AS owner`;
+            }
+
+            query += ` FROM resources`;
 
             if (userIdType === 'receiver_id') {
                 query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id
@@ -396,12 +398,16 @@ const ResourceSharingDAO = {
                             resources.resource_id,
                             resources.sessem,
                             category.category_name, 
-                            resources.owner,  
                             category.color,
                             resources.description,
-                            resources.ref_name
-                        FROM 
-                            resources`;
+                            resources.ref_name,
+                            resources.share_to`;
+
+            if (userIdType === 'receiver_id') {
+                query += ` ,users.name AS owner`;
+            }
+
+            query += ` FROM resources`;
 
             if (userIdType === 'receiver_id') {
                 query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id
@@ -416,10 +422,6 @@ const ResourceSharingDAO = {
                              OR resources.description LIKE ?)
                         `;
     
-            console.log(userIdType);
-            console.log(key);
-            console.log(userId);
-            console.log(query);
             const searchKey = `%${key}%`;
             const rows = await conn.query(query, [userId,searchKey,searchKey]);
             return rows.map(snakeToCamel);;
@@ -471,7 +473,6 @@ const ResourceSharingDAO = {
                             resources.description,
                             resources.ref_name,
                             resources.sessem,
-                            resources.owner, 
                             resources.share_to, 
                             DATE_FORMAT(resources.shared_at, '%d/%m/%Y %r') AS shared_at,
                             category.category_id,
@@ -480,11 +481,12 @@ const ResourceSharingDAO = {
                             groups.group_id,
                             groups.group_name,  
                             sharing.receiver_email,
-                            receiver.name AS receiver_name  
+                            receiver.name AS receiver_name, 
+                            sharer.name AS sharer_name 
                         FROM 
                             resources
                         INNER JOIN 
-                            users ON resources.sharer_id = users.user_id
+                            users AS sharer ON resources.sharer_id = sharer.user_id
                         INNER JOIN
                             category ON category.category_id = resources.category_id
                         LEFT JOIN
@@ -502,6 +504,8 @@ const ResourceSharingDAO = {
             }
     
             const rows = await conn.query(query, queryParams);
+
+            console.log(rows);
             
             return rows.map(snakeToCamel);
         } catch (error) {
@@ -547,10 +551,10 @@ const ResourceSharingDAO = {
                             resources.description,
                             resources.ref_name,
                             resources.sessem,
-                            resources.owner,  
                             DATE_FORMAT(resources.shared_at, '%d/%m/%Y %r') AS shared_at,
                             category.category_name,
-                            category.color
+                            category.color,
+                            users.name AS owner
                         FROM 
                             resources
                         INNER JOIN 
@@ -559,7 +563,7 @@ const ResourceSharingDAO = {
                             category ON category.category_id = resources.category_id`;
             
             const rows = await conn.query(query);
-            return rows;
+            return rows.map(snakeToCamel);
         } catch (error) {
             console.error('Error occurred while retrieving resources:', error);
             return {
@@ -569,7 +573,85 @@ const ResourceSharingDAO = {
         } finally {
             conn.release();
         }
-    }
+    },
+
+    async getFilteredAllResources(categories,semesters){
+        const conn = await getConnection();
+        try {
+            let query = `SELECT
+                            resources.resource_id,
+                            resources.link, 
+                            resources.description,
+                            resources.ref_name,
+                            resources.sessem,
+                            DATE_FORMAT(resources.shared_at, '%d/%m/%Y %r') AS shared_at,
+                            category.category_name,
+                            category.color,
+                            users.name AS owner
+                        FROM 
+                            resources
+                        INNER JOIN 
+                            users ON resources.sharer_id = users.user_id
+                        INNER JOIN
+                            category ON category.category_id = resources.category_id
+                        WHERE 1=1`;
+
+            let queryParams = [];
+    
+            if (categories && categories.length > 0) {
+                query += ' AND category.category_name IN (?)';
+                queryParams.push(categories);
+            }
+    
+            if (semesters && semesters.length > 0) {
+                query += ' AND sessem IN (?)';
+                queryParams.push(semesters);
+            }
+
+            query += ' ORDER BY shared_at DESC;'
+    
+            const rows = await conn.query(query, queryParams);
+            return rows.map(snakeToCamel);
+        } catch (error) {
+            console.error('Error fetching filtered resources:', error);
+            throw error; 
+        }finally{
+            conn.release();
+        }
+    },
+
+    async getSearchedAllResources(key){
+        const conn = await getConnection();
+        try {
+            let query = `SELECT 
+                            resources.resource_id,
+                            resources.sessem,
+                            category.category_name, 
+                            category.color,
+                            resources.description,
+                            resources.ref_name,
+                            users.name AS owner
+                        FROM 
+                            resources 
+                        INNER JOIN 
+                            category ON resources.category_id = category.category_id
+                        INNER JOIN 
+                            users ON resources.sharer_id = users.user_id
+                        WHERE 
+                            (resources.ref_name LIKE ? 
+                             OR resources.description LIKE ?)
+                        `;
+    
+            const searchKey = `%${key}%`;
+            const rows = await conn.query(query, [searchKey,searchKey]);
+            return rows.map(snakeToCamel);
+        } catch (error) {
+            console.error('Error fetching searched resources:', error);
+            throw error; 
+        }finally{
+            conn.release();
+        }
+    },
 }
 
 module.exports = ResourceSharingDAO;

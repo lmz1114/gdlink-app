@@ -16,10 +16,12 @@
                 {{ editing ? 'Edit Group' : 'Add Group' }}
               </h2>
               <button 
+                @click="closeModal"
+                ref="close"
                 type="button" 
                 class="btn-close position-absolute" 
                 style="right: 20px;" 
-                data-bs-dismiss="modal" 
+                :data-bs-dismiss = "dismiss ? 'modal' : null "
                 aria-label="Close"
               ></button>
             </div>
@@ -38,7 +40,7 @@
               </form>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+              <button @click="closeModal" type="button" class="btn btn-danger" :data-bs-dismiss = "dismiss ? 'modal' : null ">Cancel</button>
               <button 
                 ref="submit"
                 type="button" 
@@ -90,7 +92,9 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         } else if (this.group.groupName.length < 3) {
           this.groupNameError = 'Group Name must be at least 3 characters long';
           return false;
-        } else if (this.groupList.some(group => group.groupName.toLowerCase() === this.group.groupName.toLowerCase())) {
+        } else if (this.groupList.some(group =>
+  group.groupName.toLowerCase() === this.group.groupName.toLowerCase() &&
+  (this.editing ? group.groupId !== this.group.groupId : true))) {
           this.groupNameError = 'Group Name already exists';
           return false;
         }
@@ -102,11 +106,13 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
       this.editing = true;
       this.dismiss = false;
       this.group = group;
+      this.groupNameError= null;    
     },
     openModalForAdd(groups){
       this.groupList = groups;
       this.editing = false;
       this.dismiss = false;
+      this.groupNameError= null;    
       this.resetForm();
     },
     async createGroup(){
@@ -160,9 +166,21 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
       this.group.groupName = '';
       this.errorMessage = '';
     },
-    },
-  };
-  </script>
+    closeModal(){
+      if(!this.dismiss){
+        this.dismiss = true;
+        this.$nextTick(() => {
+          setTimeout(() => {
+            this.$refs.close.click();
+          }, 100);
+        }); 
+      }else{
+        this.$emit('refresh');
+      }
+    }
+  },
+};
+</script>
   
   <style scoped>
   .modal-header h2 {

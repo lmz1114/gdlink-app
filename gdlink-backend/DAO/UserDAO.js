@@ -193,7 +193,7 @@ const UserDAO = {
     async getAllUsers(userId) {
         const conn = await getConnection();  
         try {
-            const query = 'SELECT email FROM users WHERE user_id != ?;';
+            const query = 'SELECT email FROM users WHERE user_id != ? AND role = "Admin"; ';
             const rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);  
         } catch (error) {
