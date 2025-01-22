@@ -88,7 +88,7 @@ import UserLogService from '@/service/UserLogService';
             const loginType = data.loginType;
             if(data2 !== ''){
               if(loginType === 'default login')
-                this.handleExistingLogin(data.user);
+                await this.handleExistingLogin(data.user);
               else if(loginType === 'first time login')
                 await this.handleFirstTimeLogin(data2[0]);
             }else{
