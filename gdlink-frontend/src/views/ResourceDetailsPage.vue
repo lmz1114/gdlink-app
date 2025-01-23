@@ -101,6 +101,8 @@ export default {
                 return 'All Lecturer';
             case 'all':
                 return 'All';
+            case 'office':
+                return 'Academic Office';
             case 'specific users':
                 return 'Specific Users';
             case 'specific groups':

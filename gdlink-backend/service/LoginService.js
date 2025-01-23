@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const axios = require('axios');
 const UserDAO = require('../DAO/UserDAO');
 const UserLogService = require('./UserLogService');
+const ResourcesSharingService = require('./ResourcesSharingService');
 
 const LoginService = {
 
@@ -25,14 +26,15 @@ const LoginService = {
         return {success: false, message: 'Login failed. Please try again.'};
     },
 
-    async registerUser (username, role, email, user_id) {
-        const insertedUser = await UserDAO.insertUser(username, role, email, user_id);
-        if (insertedUser) {
-            await UserLogService.createUserLog(user_id, `${insertedUser.name} registered to the system`);
-            return {success: true, message: 'User inserted successfully!', user: insertedUser };
-        }
-        return {success: false, message: 'Failed to insert user.', user: null };
-    }
+    async registerUser(username, role, email, user_id) {
+      const insertedUser = await UserDAO.insertUser(username, role, email, user_id);
+      if (insertedUser) {
+        await ResourcesSharingService.initUserResources(email, role);
+        await UserLogService.createUserLog(user_id, `${insertedUser.name} registered to the system`);
+        return { success: true, message: 'User inserted successfully!', user: insertedUser };
+      }
+      return { success: false, message: 'Failed to insert user.', user: null };
+    }      
 }
 
 module.exports = LoginService; 

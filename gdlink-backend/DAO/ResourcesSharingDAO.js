@@ -142,6 +142,8 @@ const ResourceSharingDAO = {
                     }
                 }
             }
+
+            console.log(receivers);
     
             const sharingQuery = `INSERT INTO sharing (receiver_email, resource_id) VALUES (?,?);`;
             for (let receiver of receivers) {
@@ -211,6 +213,8 @@ const ResourceSharingDAO = {
                     }
                 }
             }
+
+            console.log(usersToAdd);
     
             // Insert users to be added
             const sharingQuery = `INSERT INTO sharing (receiver_email, resource_id) VALUES (?,?);`;
@@ -652,6 +656,35 @@ const ResourceSharingDAO = {
             conn.release();
         }
     },
+
+    async initResources(userEmail, userRole) {
+        const conn = await getConnection();
+        console.log("role: " + userRole + ",  email: " + userEmail);
+        try {
+            const shareToConditions = ['all']; 
+        
+            if (userRole.includes('Pelajar')) {
+                shareToConditions.push('students');  
+            } else if (userRole === 'Pensyarah') {
+                shareToConditions.push('lecturers');  
+            } 
+    
+            const query = `
+                INSERT INTO sharing (receiver_email, resource_id)
+                SELECT ?, r.resource_id
+                FROM resources r
+                WHERE r.share_to IN (?);
+            `;
+            
+            await conn.query(query, [userEmail, shareToConditions]);
+            console.log(`User sharing initialized for resources shared to "${shareToConditions.join(', ')}".`);
+        } catch (error) {
+            console.error('Error occurred while initializing user sharing:', error);
+            throw new Error('Error initializing user sharing.');
+        } finally {
+            conn.release();
+        }
+    }  
 }
 
 module.exports = ResourceSharingDAO;

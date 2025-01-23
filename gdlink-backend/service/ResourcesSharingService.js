@@ -385,6 +385,20 @@ const ResourceSharingService = {
             };
         }
     },
+
+    async initUserResources(userEmail, userRole) {
+        console.log('email' + userEmail);
+        try {
+            return await ResourcesSharingDAO.initResources(userEmail, userRole);
+        } catch (error) {
+            console.error('Service Error:', error);
+    
+            return {
+                error: true,
+                message: 'An error occurred while initializing the resources. Please try again later.'
+            };
+        }
+    }  
 }
 
 

@@ -97,11 +97,12 @@
             id="shareTo"
             v-model="resource.shareTo"
             class="form-select me-2"
-            @click="handleShareChange">
+            @change="handleShareChange">
             <option value="none" selected>None</option>
             <option value="all">All</option>
             <option value="lecturers">All Lecturers</option>
             <option value="students">All Students</option>
+            <option v-if="role!=='Academic Office'" value="office">Academic Office</option>
             <option value="specific groups">Specific Groups</option>
             <option value="specific users">Specific Users</option>
           </select>
@@ -359,9 +360,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           session: "2024/2025",
           semester: "1",
           shareTo: "",
-          receivers: [
-            { email: '' } 
-          ]
+          receivers: []
         };
       },
       handleShareChange() {
@@ -374,7 +373,13 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         if(this.resource.shareTo !== "specific groups"){
           this.resource.receiverGroups = [];
         }
-    },
+        if (this.resource.shareTo === "office") {
+          this.resource.receivers = [{ email: 'academicoffice@fc.utm.my' }];
+        }
+        if (this.resource.shareTo !== "office") {
+          this.resource.receivers = [{ email: '' }];
+        }
+      },
       addReceiverField() {
         this.resource.receivers.push({email:''});
       },
@@ -386,6 +391,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
       },
       async submitForm() {  
         if (this.validateForm()) {
+          this.resource.receivers = this.resource.receivers.filter(receiver => receiver.email.trim() !== '');
           if(this.view === 'edit'){
             await this.edit();
             this.clearForm();
@@ -404,6 +410,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           this.groups = await GroupService.getGroupList(this.userId);
       },
       async share(){
+        console.log(this.resource.shareTo);
         const data = await ResourcesSharingService.shareResource(this.userId,this.resource);
         try{
           if(data.success){
