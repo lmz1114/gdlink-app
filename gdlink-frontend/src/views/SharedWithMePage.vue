@@ -15,7 +15,7 @@
                     @filtercategory="updateCategory"
                     @filtersemester="updateSemester"
                     class="float-start mb-5"
-                    style="width: 10%;"
+                    style="width: 90%;"
                 />
 
                 <div class="btn-group float-end" style="width: 10%;">

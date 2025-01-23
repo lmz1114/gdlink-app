@@ -332,11 +332,12 @@ const ResourceSharingDAO = {
         try {
             const query = `SELECT resources.resource_id,resources.sessem,
                                 category.category_name, category.color,
-                                resources.description,resources.ref_name
+                                resources.description,resources.ref_name,sharer.name AS owner
                             FROM resources INNER JOIN sharing ON resources.resource_id = sharing.resource_id
                                 INNER JOIN category ON resources.category_id = category.category_id
-                                INNER JOIN users ON sharing.receiver_email = users.email 
-                            WHERE users.user_id = ? ORDER BY resources.shared_at DESC;`;
+                                INNER JOIN users receiver ON sharing.receiver_email = receiver.email 
+                                INNER JOIN users sharer ON resources.sharer_id = sharer.user_id
+                            WHERE receiver.user_id = ? ORDER BY resources.shared_at DESC;`;
             rows = await conn.query(query,[receiverId]);
             return rows.map(snakeToCamel);
         } catch (error) {
@@ -359,15 +360,16 @@ const ResourceSharingDAO = {
             let queryParams = [userId];
 
             if (userIdType === 'receiver_id') {
-                query += ` ,users.name AS owner`;
+                query += ` ,sharer.name AS owner`;
             }
 
             query += ` FROM resources`;
 
             if (userIdType === 'receiver_id') {
                 query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id
-                            INNER JOIN users ON sharing.receiver_email = users.email`;
-                userIdType = 'users.user_id';
+                            INNER JOIN users receiver ON sharing.receiver_email = receiver.email 
+                            INNER JOIN users sharer ON resources.sharer_id = sharer.user_id`;
+                userIdType = 'receiver.user_id';
             }
     
             query += ` INNER JOIN category ON resources.category_id = category.category_id
@@ -408,15 +410,16 @@ const ResourceSharingDAO = {
                             resources.share_to`;
 
             if (userIdType === 'receiver_id') {
-                query += ` ,users.name AS owner`;
+                query += ` ,sharer.name AS owner`;
             }
 
             query += ` FROM resources`;
 
             if (userIdType === 'receiver_id') {
                 query += ` INNER JOIN sharing ON resources.resource_id = sharing.resource_id
-                            INNER JOIN users ON sharing.receiver_email = users.email`;
-                userIdType = 'users.user_id';
+                             INNER JOIN users receiver ON sharing.receiver_email = receiver.email 
+                            INNER JOIN users sharer ON resources.sharer_id = sharer.user_id`;
+                userIdType = 'receiver.user_id';
             }
     
             query += ` INNER JOIN category ON resources.category_id = category.category_id
@@ -486,7 +489,8 @@ const ResourceSharingDAO = {
                             groups.group_name,  
                             sharing.receiver_email,
                             receiver.name AS receiver_name, 
-                            sharer.name AS sharer_name 
+                            sharer.name AS sharer_name,
+                            sharer.role AS sharer_role 
                         FROM 
                             resources
                         INNER JOIN 

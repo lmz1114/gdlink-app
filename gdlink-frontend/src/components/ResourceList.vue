@@ -140,16 +140,16 @@
 }
 
 table.smaller-font {
-  font-size: 0.8rem; /* Adjust the font size */
+  font-size: 0.8rem; 
 }
 
 table.smaller-font th,
 table.smaller-font td {
-  padding: 0.5rem; /* Reduce padding to make rows more compact */
+  padding: 0.5rem; 
 }
 
 table.smaller-font tbody tr {
-  height: 50px; /* Reduce row height */
+  height: 50px; 
 }
 
 </style>

@@ -69,9 +69,11 @@ export default {
     }
 }
 
-@media (min-width: 1400px) {
+@media (min-width: 1135px) {
     .grid-layout {
         grid-template-columns: repeat(6, var(--box-width));
     }
 }
+
+
 </style>

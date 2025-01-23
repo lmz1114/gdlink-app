@@ -27,7 +27,7 @@
           >
             <option value="" disabled>Select Category</option>
             <option v-for="category in computedCategories" :key="category.categoryId" :value="category.categoryId">
-              {{ category.categoryName }}
+              {{ category.categoryName }} 
             </option>
           </select>
           <small v-if="errors.categoryId" class="text-danger">{{ errors.categoryId }}</small>
@@ -190,6 +190,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           session: "2024/2025",
           semester: "1",
           shareTo: "none",
+          sharerRole: "",
           receiverGroups: [],
           receivers: []
         },
@@ -206,18 +207,26 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
     },
     watch: {
       async '$route'() {
-        this.resetData();
         await this.initializeData();
       },
     },
     
     computed:{
       computedCategories(){
-        if(this.role === 'Academic Office'){
+        if(this.role === 'Admin'){
+          return this.filterCategory(this.resource.sharerRole);
+        }else{
+          return this.filterCategory(this.role);
+        }
+      }
+    },
+    methods: {
+      filterCategory(role){
+        if(role === 'Academic Office'){
           return this.categories.filter(category => 
             category.accessibility.includes('staff')
           );
-        }else if(this.role === 'Pensyarah'){
+        }else if(role === 'Pensyarah'){
           return this.categories.filter(category => 
             category.accessibility.includes('lecturer')
           );
@@ -226,9 +235,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
             category.accessibility.includes('student')
           );
         }
-      }
-    },
-    methods: {
+      },
       resetData() {
         this.view = null;
         this.activeTab = null;
@@ -243,6 +250,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           session: "2024/2025",
           semester: "1",
           shareTo: "none",
+          sharerRole: "",
           receiverGroups: [],
           receivers: []
         };
@@ -327,6 +335,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
             session: item.sessem.split("-")[0],
             semester: item.sessem.split("-")[1],
             shareTo: item.shareTo,
+            sharerRole: item.sharerRole,
             receiverGroups: item.groups.map(group => group.groupId),
             receivers: item.receivers.map(receiver => ({ email: receiver.receiverEmail })),
         }));
@@ -345,7 +354,9 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
       },
       cancelUpload() {
         this.clearForm();
-        if(this.view === 'edit'){
+        if(this.role === 'Admin'){
+          this.$router.push({ name: 'Resource Management Resource Details', params: { resourceId: this.resourceId } });
+        } else if(this.view === 'edit'){
           this.$router.push('/my_sharelinks');
         }else{
           this.$router.push('/');
@@ -360,6 +371,7 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           session: "2024/2025",
           semester: "1",
           shareTo: "",
+          sharerRole: "",
           receivers: []
         };
       },

@@ -315,6 +315,7 @@ const ResourceSharingService = {
                             categoryName: item.categoryName,
                             color: item.color,
                             sharerName: item.sharerName,
+                            sharerRole : item.sharerRole,                          
                             groups: [],
                             receivers: []
                         };
