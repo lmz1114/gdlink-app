@@ -69,9 +69,21 @@ export default {
     }
 }
 
-@media (min-width: 1135px) {
+@media (min-width: 1400px) {
     .grid-layout {
         grid-template-columns: repeat(6, var(--box-width));
+    }
+}
+
+@media (min-width: 1616px) {
+    .grid-layout {
+        grid-template-columns: repeat(7, var(--box-width));
+    }
+}
+
+@media (min-width: 1832px) {
+    .grid-layout {
+        grid-template-columns: repeat(8, var(--box-width));
     }
 }
 

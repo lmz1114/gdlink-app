@@ -139,6 +139,18 @@
     }
 }
 
+@media (min-width: 1616px) {
+    .grid-layout {
+        grid-template-columns: repeat(7, var(--box-width));
+    }
+}
+
+@media (min-width: 1832px) {
+    .grid-layout {
+        grid-template-columns: repeat(8, var(--box-width));
+    }
+}
+
 table.smaller-font {
   font-size: 0.8rem; 
 }
