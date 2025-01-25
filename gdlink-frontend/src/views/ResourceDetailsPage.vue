@@ -23,18 +23,16 @@
                             <span>{{ resource.categoryName }}</span>
                             <p>Session/Semester: </p>
                             <span>{{ resource.sessem }}</span>
-                            <p v-if="view === 'receive'">Shared by: </p>
-                            <span v-if="view === 'receive'">{{ resource.sharerName }}</span>
+                            <p v-if="view === 'receive' || role === 'Admin'">Shared by: </p>
+                            <span v-if="view === 'receive' || role === 'Admin'">{{ resource.sharerName }}</span>
                             <p>Shared Date: </p> 
                             <span>{{ resource.sharedAt }}</span>
-                            <p v-if="view === 'share'">Owner: </p> 
-                            <span v-if="view === 'share'">{{ resource.owner }}</span>
                             <p v-if="view === 'share'">Share To: </p> 
                             <span v-if="view === 'share'">
-                                {{ capitalizeWords(resource.shareTo) }}
+                                {{ transformedShareTo(resource.shareTo) }}
                                 <i v-if="resource.shareTo === 'specific users' || resource.shareTo === 'specific groups'" class="bi bi-info-circle" data-bs-toggle="modal" data-bs-target="#detailsModal"></i>
                                 <ShareToDetailsModal v-if="resource.shareTo === 'specific users' || resource.shareTo === 'specific groups'"
-                                    :title="capitalizeWords(resource.shareTo)"
+                                    :title="transformedShareTo(resource.shareTo)"
                                     :groups="resource.groups"
                                     :receivers="resource.receivers"
                                 />
@@ -67,6 +65,7 @@ export default {
     data(){
         return{
             userId: null,
+            role: null,
             resourceId: null,
             view: null,
             type: null,
@@ -80,7 +79,7 @@ export default {
       ShareToDetailsModal,
       CustomButton
     },
-    created(){
+    async created(){
         this.resourceId = this.$route.params.resourceId;
         this.view = this.$route.meta.view;
         this.type = this.$route.meta.type;
@@ -88,25 +87,42 @@ export default {
         if (sessionData) {
             const userSession = JSON.parse(sessionData);
             this.userId = userSession.user_id;
+            this.role = userSession.role;
         }
-        this.displayResourceDetails();
+        await this.displayResourceDetails();
+        console.log(this.resource);
     },
     methods:{
-        capitalizeWords(str) {
-            return str
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ');
+        transformedShareTo(shareTo) {
+            switch (shareTo) {
+            case 'students':
+                return 'All Students';
+            case 'lecturers':
+                return 'All Lecturer';
+            case 'all':
+                return 'All';
+            case 'office':
+                return 'Academic Office';
+            case 'specific users':
+                return 'Specific Users';
+            case 'specific groups':
+                return 'Specific Groups';
+            default:
+                return 'None';
+            }
         },
         async displayResourceDetails(){
             let resource;
             if(this.view === 'share'){
                 resource = await ResourcesSharingService.getMyShareLinksResourceDetails(this.resourceId);
                 this.activeTab = 'My ShareLinks';
+                if(this.role === 'Admin'){
+                    this.activeTab = 'Resource Management';
+                }
             }
             else{
                 resource = await ResourcesSharingService.getSharedWithMeResourceDetails(this.resourceId,this.userId);
-                if(this.type == 'favourites'){
+                if(this.type === 'favourites'){
                     this.activeTab = 'Favourites';
                 }else{
                     this.activeTab = 'Shared With Me';
@@ -128,14 +144,22 @@ export default {
             }
         },
         editResource(){
-            this.$router.push({ name: 'Edit Resource Form', params: { resourceId: this.resourceId } });
+            let nav = 'Edit Resource Form';
+            if(this.role === 'Admin'){
+                nav = 'Resource Management Edit Resource Form';
+            }
+            this.$router.push({ name: nav, params: { resourceId: this.resourceId } });
         },
         async deleteResource(){
+            let nav = '/my_sharelinks';
+            if(this.role === 'Admin'){
+                nav = '/admin/AllResources';
+            }
           await SweetAlert.deleteSwal({
             confirmText: 'This action will permanently delete the resource.',
             successText: 'The resource has been deleted.',
-            deleteAction: () => ResourcesSharingService.deleteResource(this.userId, this.resourceId)
-            navigation: () => this.$router.push('/my_sharelinks'),
+            deleteAction: () => ResourcesSharingService.deleteResource(this.userId, this.resourceId),
+            navigation: () => this.$router.push(nav),
           });
         },
     }

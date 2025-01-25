@@ -2,6 +2,32 @@ const { getConnection } = require('../db');
 const {snakeToCamel} = require('../tools/camelTransform');
 
 const UserDAO = {
+    async findUserById (userId) {
+        const conn = await getConnection();
+        try {
+          const [user] = await conn.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+          return user || null;
+        } finally {
+          if (conn) conn.release();
+        }
+    },
+
+    async insertUser (username, role, email, userId) {
+        const conn = await getConnection();
+        try {
+          await conn.query('INSERT INTO users (user_id, email, role, name) VALUES (?, ?, ?, ?)', [
+            userId,
+            email,
+            role,
+            username,
+          ]);
+          const [user] = await conn.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+          return user || null;
+        } finally {
+          if (conn) conn.release();
+        }
+    },
+
     async getUserData(userId){
         const conn = await getConnection();
 
@@ -133,7 +159,7 @@ const UserDAO = {
     async getAllLecturer(userId) {
         const conn = await getConnection();  
         try {
-            const query = 'SELECT user_id FROM users WHERE role = "Pensyarah" AND user_id != ?';
+            const query = 'SELECT email FROM users WHERE role = "Pensyarah" AND user_id != ?';
             const rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);  
         } catch (error) {
@@ -150,7 +176,7 @@ const UserDAO = {
     async getAllStudent(userId) {
         const conn = await getConnection();  // Await to ensure connection is properly established
         try {
-            const query = 'SELECT user_id FROM users WHERE role LIKE "%Pelajar%" AND user_id != ?';
+            const query = 'SELECT email FROM users WHERE role LIKE "%Pelajar%" AND user_id != ?';
             const rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);  
         } catch (error) {
@@ -167,7 +193,7 @@ const UserDAO = {
     async getAllUsers(userId) {
         const conn = await getConnection();  
         try {
-            const query = 'SELECT user_id FROM users WHERE user_id != ?;';
+            const query = `SELECT email FROM users WHERE user_id != ? AND role != 'Admin';`;
             const rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);  
         } catch (error) {

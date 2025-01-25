@@ -14,31 +14,31 @@
                     @filtersemester="updateSemester"
                     class="float-start w-100 mb-3"
                 />
-                
+                <p style="margin:15px"><strong>Number of resources: {{ allResources.length }} </strong></p>
                 <table class="table table-striped table-bordered smaller-font">
                     <thead class="text-center align-middle">
                         <tr>
-                            <th scope="col">Resource No.</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Ref.Name</th>
-                            <th scope="col">Session-Semester</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Owner</th>
-                            <th scope="col">Actions</th>
+                            <th scope="col" style="width: 10%;">Resource No.</th>
+                            <th scope="col" style="width: 15%;">Category</th>
+                            <th scope="col" style="width: 20%;">Ref. Name</th>
+                            <th scope="col" style="width: 15%;">Session-Semester</th>
+                            <th scope="col" style="width: 25%;">Description</th>
+                            <th scope="col" style="width: 15%;">Shared by</th>
+                            <th scope="col" style="width: 10%;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(resource, index) in paginatedResources" :key="resource.resource_id" style="height: 50px;">
+                        <tr v-for="(resource, index) in paginatedResources" :key="resource.resourceId" style="height: 50px;">
                             <td class="align-middle">{{ (currentPage - 1) * resourcesPerPage + index + 1 }}</td>
-                            <td class="align-middle">{{ resource.category_name }}</td>
-                            <td class="align-middle">{{ resource.ref_name }}</td>
-                            <td class="align-middle">{{ resource.sessem }}</td>
-                            <td class="align-middle">{{ resource.description }}</td>
-                            <td class="align-middle">{{ resource.owner }}</td>
-                            <td class="align-middle text-center">
+                            <td class="align-middle text-center">{{ resource.categoryName }}</td>
+                            <td class="align-middle text-center">{{ resource.refName }}</td>
+                            <td class="align-middle text-center">{{ resource.sessem }}</td>
+                            <td class="align-middle text-center">{{ resource.description }}</td>
+                            <td class="align-middle text-center">{{ resource.owner }}</td>
+                            <td class="align-middle">
                                 <div class="d-flex justify-content-center align-items-center">
-                                    <button @click="editResource(resource.resource_id)" class="btn btn-warning me-2">Edit</button>
-                                    <button @click="deleteResource(resource.resource_id)" class="btn btn-danger">Delete</button>
+                                    <button @click="viewDetails(resource.resourceId)"
+                                        class="btn btn-info">View</button>
                                 </div>
                             </td>
                         </tr>
@@ -85,52 +85,22 @@ created() {
     this.displayAllResources();
 },
 computed: {
-    filteredResources() {
-        return this.allResources.filter((resource) => {
-        const matchesCategory = this.selectedCategories
-            ? this.selectedCategories.includes(resource.category_name)
-            : true;
-        const matchesSemester = this.selectedSemesters
-            ? this.selectedSemesters.includes(resource.sessem)
-            : true;
-        const matchesSearch = this.key
-            ? resource.ref_name.toLowerCase().includes(this.key.toLowerCase())
-            : true;
-        return matchesCategory && matchesSemester && matchesSearch;
-        });
-    },
     totalPages() {
         return Math.ceil(this.allResources.length / this.resourcesPerPage);
     },
     paginatedResources() {
         const start = (this.currentPage - 1) * this.resourcesPerPage;
         const end = start + this.resourcesPerPage;
-        return this.sortedResources.slice(start, end);
+        return this.sortedResources().slice(start, end);
     },
-    sortedResources() {
-        return this.allResources.slice().sort((a, b) => a.resource_id - b.resource_id);
-    }
 },
 methods: {
+    sortedResources() {
+        console.log(this.allResources);
+        return this.allResources.slice().sort((a, b) => a.resourceId - b.resourceId);
+    },
     async displayAllResources() {
         this.allResources = await ResourcesSharingService.getAllResources();
-    },
-    async deleteResource(resource_id) {
-        const confirmDelete = confirm('Are you sure you want to delete this resource?');
-        if (!confirmDelete) return;
-
-        try {
-            const response = await ResourcesSharingService.deleteResource(this.userId, resource_id); //updated
-            if (response.success) {
-                this.allResources = this.allResources.filter(resource => resource.resource_id !== resource_id);
-                alert('Resource deleted successfully.');
-            } else {
-                alert(response.message || 'Failed to delete resource.');
-            }
-        } catch (error) {
-            console.error('Error deleting resource:', error);
-            alert('An error occurred. Please try again.');
-        }
     },
     nextPage() {
         if (this.currentPage < this.totalPages) {
@@ -162,12 +132,16 @@ methods: {
             this.displayAllResources();
         }
     },
-    editResource(resourceId) {
-        this.$router.push({ name: 'Edit Resource Form', params: { resourceId } });
-    },
     viewDetails(id) {
-        this.$router.push({ name: 'Resource Details', params: { resource_id: id } });
-    }
+        console.log(id);
+        this.$router.push({ name: 'Resource Management Resource Details', params: { resourceId: id } });
+    },
+    async displayFilteredResources() {
+        this.allResources = await ResourcesSharingService.getFilteredAllResources(this.selectedCategories,this.selectedSemesters);
+    },
+    async displaySearchedResources() {
+        this.allResources = await ResourcesSharingService.getSearchedAllResources(this.key);
+    },
 }
 };
 </script>

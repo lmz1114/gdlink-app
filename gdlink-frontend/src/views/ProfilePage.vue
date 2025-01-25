@@ -42,6 +42,10 @@
                     <p class="profile-text"><strong>Email</strong></p>
                     <span><strong v-if="user">{{ user.email }}</strong></span>
                   </div>
+                  <div class="d-flex">
+                    <p class="profile-text"><strong>Role</strong></p>
+                    <span><strong v-if="user">{{ user.role }}</strong></span>
+                  </div>
                   <button class="btn btn-primary w-25 float-end mt-4" type="button" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                     Change Password
                   </button>
@@ -49,7 +53,8 @@
                 </div>
 
                 <div class="d-flex flex-column border rounded shadow-sm bg-white h-50 p-4" style="position:relative; overflow:hidden;">
-                  <h2 class = "mb-4"><b>User Shared Resources</b></h2>
+                  <h2 v-if="user && user.role === 'Admin'" class = "mb-4"><b>Resource Management</b></h2>
+                  <h2 v-else class = "mb-4"><b>User Shared Resources</b></h2>
                   <div class="d-flex flex-row gap-3">
                   <div box-width="180px" v-for="(resource, index) in myResources" :key="index"> 
                     <ResourceBox 
@@ -100,13 +105,17 @@ export default {
       ChangePasswordForm,
       ResourceBox
     },
-    created() {
+    async created() {
       const sessionData = sessionStorage.getItem('utmwebfc_session');
       if (sessionData) {
         const userSession = JSON.parse(sessionData);
         this.userId = userSession.user_id;
-        this.getProfileData();
-        this.displayMySharedResources();
+        await this.getProfileData();
+        if(this.user.role === 'Admin'){
+          await this.displayAllResources();
+        } else{
+          await this.displayMySharedResources();
+        }
       }
     },
     methods:{
@@ -131,6 +140,9 @@ export default {
       },
       async displayMySharedResources(){
         this.myResources = (await ResourcesSharingService.getMyShareLinksResources(this.userId)).slice(0, 4);
+      },
+      async displayAllResources(){
+        this.myResources = (await ResourcesSharingService.getAllResources()).slice(0, 4);
       },
       triggerSideBar(){
         this.$refs.layout.$refs.sidebar.getProfilePicture();

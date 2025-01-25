@@ -90,16 +90,15 @@ export default {
     methods:{
         async displayGroupList(){
             this.groups = await GroupService.getGroupList(this.userId);
-            console.log(this.groups);
         },
         async displayMemberList(groupId){
             this.groupMembers = await GroupMemberService.getMemberList(groupId);
         },
         openEditModal(group){
-            this.$refs.groupForm.openModalForEdit(group);
+            this.$refs.groupForm.openModalForEdit(group,this.groups);
         },
         openAddModal(){
-            this.$refs.groupForm.openModalForAdd();
+            this.$refs.groupForm.openModalForAdd(this.groups);
         },
         openMemberListModal(group){
             this.$refs.memberList.openModalForMembers(group);

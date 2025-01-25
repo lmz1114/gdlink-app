@@ -119,6 +119,7 @@ export default {
       currentPage: 1,
       logsPerPage: 9,
       sortDirection: "desc",
+      isSearching: false,
     };
   },
   components: {
@@ -151,22 +152,13 @@ export default {
       const end = start + this.logsPerPage;
       return this.userLogs.slice(start, end);
     },
-
-    filteredLogs() {
-      if (!this.searchQuery.trim()) {
-        return this.userLogs; 
-      }
-      const query = this.searchQuery.trim().toLowerCase();
-      return this.userLogs.filter(
-        (log) =>
-          (log.userId && log.userId.toString().toLowerCase().includes(query)) ||
-          (log.userName && log.userName.toLowerCase().includes(query))
-      );
-    },
   },
 
   methods: {
     async fetchUserLogs() {
+      if (this.isSearching) {
+        return; 
+      }
       try {
         const response = await UserLogService.getAllUserLogs();
         if (response?.UserLog) {
@@ -219,8 +211,10 @@ export default {
     search(key) {
       this.key = key;
       if (key) {
+        this.isSearching = true;
         this.displaySearchedUserLogs();
       } else {
+        this.isSearching = false;
         this.fetchUserLogs();
       }
     },

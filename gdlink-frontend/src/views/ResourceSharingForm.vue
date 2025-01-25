@@ -8,26 +8,13 @@
         <div class="mb-3">
           <label for="link" class="form-label">Link:</label>
           <input
-            type="url"
+            type="text"
             id="link"
             v-model="resource.link"
             class="form-control"
             placeholder="Enter the link"
-            required
           />
-        </div>
-
-        <!-- Owner -->
-        <div class="mb-3">
-          <label for="owner" class="form-label">Owner:</label>
-          <input
-            type="text"
-            id="owner"
-            v-model="resource.owner"
-            class="form-control"
-            placeholder="Enter the owner"
-            required
-          />
+          <small v-if="errors.link" class="text-danger">{{ errors.link }}</small>
         </div>
   
         <!-- Category Dropdown -->
@@ -37,13 +24,13 @@
             id="category"
             v-model="resource.categoryId"
             class="form-select"
-            required
           >
             <option value="" disabled>Select Category</option>
-            <option v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
-              {{ category.categoryName }}
+            <option v-for="category in computedCategories" :key="category.categoryId" :value="category.categoryId">
+              {{ category.categoryName }} 
             </option>
           </select>
+          <small v-if="errors.categoryId" class="text-danger">{{ errors.categoryId }}</small>
         </div>
   
         <!-- Reference Name Input -->
@@ -55,8 +42,8 @@
             v-model="resource.refName"
             class="form-control"
             placeholder="Enter reference name"
-            required
           />
+          <small v-if="errors.refName" class="text-danger">{{ errors.refName }}</small>
         </div>
   
         <!-- Description Input -->
@@ -68,8 +55,8 @@
             v-model="resource.description"
             class="form-control"
             placeholder="Enter description"
-            required
           />
+          <small v-if="errors.description" class="text-danger">{{ errors.description }}</small>
         </div>
   
         <!-- Session Dropdown -->
@@ -110,11 +97,12 @@
             id="shareTo"
             v-model="resource.shareTo"
             class="form-select me-2"
-            @click="handleShareChange">
-            <option value="" selected>None</option>
+            @change="handleShareChange">
+            <option value="none" selected>None</option>
             <option value="all">All</option>
             <option value="lecturers">All Lecturers</option>
             <option value="students">All Students</option>
+            <option v-if="role!=='Academic Office'" value="office">Academic Office</option>
             <option value="specific groups">Specific Groups</option>
             <option value="specific users">Specific Users</option>
           </select>
@@ -123,9 +111,9 @@
             type="button"
             class="btn btn-outline-primary"
             @click="addReceiverField"
-            style="width:120px;"
+            style="width:150px;"
           >
-            Add User ID
+            Add User Email
           </button>
         </div>
         </div>
@@ -142,18 +130,22 @@
               {{ group.groupName }}
             </label>
           </div>
-          
+          <small v-if="errors.receiverGroups" class="text-danger">{{ errors.receiverGroups }}</small>
         </div>
 
         <div v-if="resource.shareTo === 'specific users'" class="mb-3">
           <div v-for="(receiver, index) in resource.receivers" :key="index" class="input-group mb-2" style="width: 250px;">
             <input
               type="text"
-              v-model="receiver.userId"
+              v-model="receiver.email"
               class="form-control"
-              placeholder="Enter User ID"
+              placeholder="Enter User Email"
             />
+            <span class="input-group-text" @click="removeReceiverField(index)">
+              <i class="bi bi-dash"></i>
+            </span>
           </div>
+          <small v-if="errors.receivers" class="text-danger">{{ errors.receivers }}</small>
         </div>
 
         <div class="d-flex justify-content-end">
@@ -172,11 +164,11 @@
 </DefaultLayout>
   </template>
   
-  <script>
-  import DefaultLayout from '../components/DefaultLayout.vue'; 
-  import ResourcesSharingService from '../service/ResourcesSharingService';
-  import CategoryService from '../service/CategoryService';
-  import GroupService from '../service/GroupService';
+<script>
+import DefaultLayout from '../components/DefaultLayout.vue'; 
+import ResourcesSharingService from '../service/ResourcesSharingService';
+import CategoryService from '../service/CategoryService';
+import GroupService from '../service/GroupService';
 import SweetAlert from '@/Utils/SweetAlertUtils';
 
   export default {
@@ -188,56 +180,164 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         view: null,
         activeTab: null,
         userId: null,
+        role: null,
         resourceId: null,
         resource: {
           link: "",
           categoryId: "",
-          owner: "",
           refName: "",
           description: "",
           session: "2024/2025",
           semester: "1",
-          shareTo: "",
+          shareTo: "none",
+          sharerRole: "",
           receiverGroups: [],
-          receivers: [{
-            userId:''
-          }]
+          receivers: []
         },
         categories: [],
         groups: [],
         previousShareTo: '',
         previousReceiverGroups: '',
-        previousReceivers: ''
+        previousReceivers: '',
+        errors: {},
       };
     },
-    created() {
-      this.resourceId = this.$route.params.resourceId;
-      this.view = this.$route.meta.view;
-      const sessionData = sessionStorage.getItem('utmwebfc_session');
-      if (sessionData) {
-        const userSession = JSON.parse(sessionData);
-        this.userId = userSession.user_id;
+    async created() {
+      await this.initializeData();
+    },
+    watch: {
+      async '$route'() {
+        await this.initializeData();
+      },
+    },
+    
+    computed:{
+      computedCategories(){
+        if(this.role === 'Admin'){
+          return this.filterCategory(this.resource.sharerRole);
+        }else{
+          return this.filterCategory(this.role);
+        }
       }
-        this.displayCategoryList();
-        this.getGroupData();
-      if(this.view === 'edit'){
-        this.getResourceData();
-      }
-      this.activeTab = 'My ShareLinks'
     },
     methods: {
+      filterCategory(role){
+        if(role === 'Academic Office'){
+          return this.categories.filter(category => 
+            category.accessibility.includes('staff')
+          );
+        }else if(role === 'Pensyarah'){
+          return this.categories.filter(category => 
+            category.accessibility.includes('lecturer')
+          );
+        }else{
+          return this.categories.filter(category => 
+            category.accessibility.includes('student')
+          );
+        }
+      },
+      resetData() {
+        this.view = null;
+        this.activeTab = null;
+        this.userId = null;
+        this.role = null;
+        this.resourceId = null;
+        this.resource = {
+          link: "",
+          categoryId: "",
+          refName: "",
+          description: "",
+          session: "2024/2025",
+          semester: "1",
+          shareTo: "none",
+          sharerRole: "",
+          receiverGroups: [],
+          receivers: []
+        };
+        this.categories = [];
+        this.groups = [];
+        this.previousShareTo = '';
+        this.previousReceiverGroups = '';
+        this.previousReceivers = '';
+        this.errors = {};
+      },
+      async initializeData() {
+        this.resourceId = this.$route.params.resourceId;
+        this.view = this.$route.meta.view;
+        console.log(this.view);
+
+        const sessionData = sessionStorage.getItem('utmwebfc_session');
+        if (sessionData) {
+          const userSession = JSON.parse(sessionData);
+          this.userId = userSession.user_id;
+          this.role = userSession.role;
+        }
+
+        await this.displayCategoryList();
+        await this.getGroupData();
+
+        if (this.view === 'edit') {
+          await this.getResourceData();
+        }
+
+        this.activeTab = 'My ShareLinks';
+        if (this.role === 'Admin') {
+          this.activeTab = 'Resource Management';
+        }
+      },
+      validateForm() {
+        this.errors = {}; // Clear existing errors
+
+        // Validate Link
+        if (!this.resource.link) {
+          this.errors.link = 'Link is required.';
+        } else if (!/^https?:\/\/.+\..+/.test(this.resource.link)) {
+          this.errors.link = 'Enter a valid URL.';
+        }
+
+        // Validate Category
+        if (!this.resource.categoryId) {
+          this.errors.categoryId = 'Category is required.';
+        }
+
+        // Validate Reference Name
+        if (!this.resource.refName) {
+          this.errors.refName = 'Reference name is required.';
+        }
+
+        // Validate Description
+        if (!this.resource.description) {
+          this.errors.description = 'Description is required.';
+        }
+
+        // Validate Sharing
+        if (this.resource.shareTo === 'specific groups' && this.resource.receiverGroups.length === 0) {
+          this.errors.receiverGroups = 'Select at least one group.';
+        }
+
+        if (this.resource.shareTo === 'specific users') {
+          const invalidEmails = this.resource.receivers.filter(
+            (receiver) => !receiver.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(receiver.email)
+          );
+          if (invalidEmails.length > 0) {
+            this.errors.receivers = 'All user emails must be valid.';
+          }
+        }
+
+        return Object.keys(this.errors).length === 0;
+      },
       transformData(inputData) {
         return inputData.map(item => ({
             link: item.link,
             categoryId: item.categoryId,
-            owner: item.owner,
             refName: item.refName,
             description: item.description,
             session: item.sessem.split("-")[0],
             semester: item.sessem.split("-")[1],
             shareTo: item.shareTo,
+            sharerRole: item.sharerRole,
             receiverGroups: item.groups.map(group => group.groupId),
-            receivers: item.receivers.map(receiver => ({ userId: receiver.receiverId })),
+            receivers: item.receivers.map(receiver => ({ email: receiver.receiverEmail })),
         }));
       },
       async displayCategoryList(){
@@ -247,10 +347,22 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
         const resource = await ResourcesSharingService.getMyShareLinksResourceDetails(this.resourceId);
         this.resource = this.transformData(resource)[0];
         this.previousShareTo = this.resource.shareTo;
-        this.previousReceiverGroups = [...this.resource.receiverGroups];
-        this.previousReceivers = [...this.resource.receivers];
+        console.log(this.previousShareTo);
+        this.previousReceiverGroups = JSON.parse(JSON.stringify(this.resource.receiverGroups)); // Deep copy
+        this.previousReceivers = JSON.parse(JSON.stringify(this.resource.receivers));
+        console.log(this.previousReceivers);
       },
       cancelUpload() {
+        this.clearForm();
+        if(this.role === 'Admin'){
+          this.$router.push({ name: 'Resource Management Resource Details', params: { resourceId: this.resourceId } });
+        } else if(this.view === 'edit'){
+          this.$router.push('/my_sharelinks');
+        }else{
+          this.$router.push('/');
+        }
+      },
+      clearForm() {
         this.resource = {
           link: "",
           category_id: "",
@@ -259,48 +371,58 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
           session: "2024/2025",
           semester: "1",
           shareTo: "",
-          receivers: [
-            { userId: '' } 
-          ]
+          sharerRole: "",
+          receivers: []
         };
       },
       handleShareChange() {
-      if (this.resource.shareTo !== "specific users") {
-        this.resource.receivers = [{ userId: '' }];
-      }
-      if(this.resource.shareTo !== "specific groups"){
-        this.resource.receiverGroups = [];
-      }
-    },
+        if (this.resource.shareTo === "specific users") {
+          this.resource.receivers = [{ email: '' }];
+        }
+        if (this.resource.shareTo !== "specific users") {
+          this.resource.receivers = [];
+        }
+        if(this.resource.shareTo !== "specific groups"){
+          this.resource.receiverGroups = [];
+        }
+        if (this.resource.shareTo === "office") {
+          this.resource.receivers = [{ email: 'academicoffice@fc.utm.my' }];
+        }
+        if (this.resource.shareTo !== "office") {
+          this.resource.receivers = [{ email: '' }];
+        }
+      },
       addReceiverField() {
-        this.resource.receivers.push({userId:''});
+        this.resource.receivers.push({email:''});
+      },
+
+      removeReceiverField(index) {
+        if (index > -1 && index < this.resource.receivers.length && this,this.resource.receivers.length > 1) {
+          this.resource.receivers.splice(index, 1);
+        }
       },
       async submitForm() {  
-        if(this.resource.receivers.length>0){
-          this.resource.receivers = this.resource.receivers
-          .filter((item) => item.userId.trim() !== "")  
-          .map((item) => {
-            item.userId = item.userId.toUpperCase(); 
-            return item;
-          });    
-        }
-        if(this.view === 'edit'){
-          await this.edit();
-          this.cancelUpload();
-          this.previousShareTo = '';
-          this.previousReceiverGroups = [];
-          this.previousReceivers = [];
-          this.$router.push({ name: 'My ShareLinks Resource Details', params: { resourceId: this.resourceId } });
-        }else{
-          await this.share();
-          this.cancelUpload();
-          this.$router.push('/my_sharelinks');
+        if (this.validateForm()) {
+          this.resource.receivers = this.resource.receivers.filter(receiver => receiver.email.trim() !== '');
+          if(this.view === 'edit'){
+            await this.edit();
+            this.clearForm();
+            this.previousShareTo = '';
+            this.previousReceiverGroups = [];
+            this.previousReceivers = [];
+            this.$router.push({ name: 'My ShareLinks Resource Details', params: { resourceId: this.resourceId } });
+          }else{
+            await this.share();
+            this.clearForm();
+            this.$router.push('/my_sharelinks');
+          }
         }
       },
       async getGroupData(){
           this.groups = await GroupService.getGroupList(this.userId);
       },
       async share(){
+        console.log(this.resource.shareTo);
         const data = await ResourcesSharingService.shareResource(this.userId,this.resource);
         try{
           if(data.success){
@@ -331,12 +453,12 @@ import SweetAlert from '@/Utils/SweetAlertUtils';
   </script>
   
   <style scoped>
-  .bg-white{
-    background-color: white;
-  }
-
   .form-select {
     max-width: 180px;
+  }
+
+  .input-group-text{
+    cursor: pointer;
   }
   </style>
   

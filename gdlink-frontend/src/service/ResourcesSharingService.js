@@ -129,7 +129,30 @@ const ResourcesSharingService = {
         } catch (error) {
             console.error('Error fetching resources:', error);
         }
-    }
+    },
+
+    async getFilteredAllResources(selectedCategories,selectedSemesters){
+        try {
+            const response = await axios.post(`${API_BASE_URL}/resource_management/filter`,{
+                categories: selectedCategories,
+                semesters: selectedSemesters,
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
+    },
+
+    async getSearchedAllResources(key){
+        try {
+            const response = await axios.post(`${API_BASE_URL}/resource_management/search`,{
+                key: key
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching resources:', error);
+        }
+    },
     
 };
 

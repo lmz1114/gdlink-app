@@ -21,7 +21,7 @@
       </p>
     </div>
     <div class="float-end">
-      <button @click="markAsRead" class="btn btn-primary me-4">View</button>
+      <button v-if="!notification.readStatus" @click="markAsRead" class="btn btn-primary me-4" style="font-size: 13px; width:120px">Mark As Read</button>
       <button @click="deleteNotification" class="btn btn-danger me-4">
         Delete
       </button>

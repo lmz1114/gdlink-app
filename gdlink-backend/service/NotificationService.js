@@ -28,9 +28,9 @@ const NotificationService = {
         } 
     },
 
-    async createUserNotifications(userId, notificationId) {
+    async createUserNotifications(userEmail, notificationId) {
         try {
-            return await NotificationDAO.createUserNotifications(userId, notificationId);
+            return await NotificationDAO.createUserNotifications(userEmail, notificationId);
         } catch (error) {
             console.error('NotificationService Error:', error.message);
             throw error;

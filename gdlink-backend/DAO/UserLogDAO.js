@@ -51,7 +51,8 @@ const UserLogDAO = {
                     ul.user_id AS userId,
                     IFNULL(u.name, 'N/A') AS user_name, 
                     ul.action AS action,
-                    ul.action_time 
+                    ul.action_time ,
+                    u.role
                 FROM 
                     user_log ul
                 LEFT JOIN 

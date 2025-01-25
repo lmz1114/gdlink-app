@@ -22,7 +22,7 @@
               ></button>
             </div>
             <div class="modal-body p-4">
-              <form @submit.prevent="handleSubmit">
+              <form>
                 <div v-if="isDefaultPassword" class="mb-3">
                   <label for="currentPassword" class="form-label">Current Password</label>
                   <input 
@@ -30,8 +30,8 @@
                     class="form-control" 
                     id="currentPassword" 
                     v-model="currentPassword" 
-                    required
                   />
+                  <small v-if="errors.currentPassword" class="text-danger">{{ errors.currentPassword }}</small>
                 </div>
                 <div class="mb-3">
                   <label for="newPassword" class="form-label">New Password</label>
@@ -40,8 +40,8 @@
                     class="form-control" 
                     id="newPassword" 
                     v-model="newPassword" 
-                    required
                   />
+                  <small v-if="errors.newPassword" class="text-danger">{{ errors.newPassword }}</small>
                 </div>
                 <div class="mb-3">
                   <label for="confirmPassword" class="form-label">Confirm New Password</label>
@@ -50,22 +50,20 @@
                     class="form-control" 
                     id="confirmPassword" 
                     v-model="confirmPassword" 
-                    required
                   />
-                </div>
-                <div v-if="errorMessage" class="alert alert-danger" role="alert">
-                  {{ errorMessage }}
+                  <small v-if="errors.confirmPassword" class="text-danger">{{ errors.confirmPassword }}</small>
                 </div>
               </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
               <button 
+                ref="submit"
                 type="button" 
                 class="btn btn-primary" 
+                :data-bs-dismiss = "dismiss ? 'modal' : null"
                 style="width: 40%"
                 @click="handleSubmit"
-                data-bs-dismiss="modal"
               >Change Password</button>
             </div>
           </div>
@@ -91,7 +89,12 @@ import ProfileService from '../service/ProfileService';
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
-        errorMessage: '',
+        dismiss: false,
+        errors: {
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        }
       };
     },
     created() {
@@ -102,9 +105,47 @@ import ProfileService from '../service/ProfileService';
       }
     },
     methods: {
+      validation(){
+        this.errors = {
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        };
+
+        let isValid = true;
+        if (this.isDefaultPassword && !this.currentPassword) {
+          this.errors.currentPassword = "Current password is required.";
+          isValid = false;
+        }
+
+        if (this.newPassword !== this.confirmPassword) {
+          this.errors.newPassword = "New password and confirmation do not match.";
+          this.errors.confirmPassword = "New password and confirmation do not match.";
+          isValid = false;
+        }
+
+        if (!this.newPassword || !this.confirmPassword) {
+          if (!this.newPassword) this.errors.newPassword = "New password is required.";
+          if (!this.confirmPassword) this.errors.confirmPassword = "Confirm new password is required.";
+          isValid = false;
+        }
+        return isValid;
+
+      },
       async handleSubmit() {
-        await this.processChangePassword();
-        this.resetForm();
+        if(this.validation()){
+          if(!this.dismiss){
+          this.dismiss = true;
+          this.$nextTick(() => {
+            setTimeout(() => {
+              this.$refs.submit.click();
+              }, 100);
+            }); 
+          }else{
+            await this.processChangePassword();
+            this.resetForm();
+          }
+        }
       },
       resetForm() {
         this.currentPassword = '';

@@ -23,11 +23,11 @@
                     <a class="btn btn-secondary" :class="{ active: displayType === 'table' }" @click.prevent="setDisplayType('table')">Table</a>
                 </div>                 
 
-
-                <MyShareLinkResources
+                <MyShareLinkResources 
                     :resources="myResources"
                     @viewDetails = "viewDetails"
                     :displayType="displayType"
+                    :resourceType="'share'"
                 />
             </div>
         </template>

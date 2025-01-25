@@ -19,7 +19,9 @@
       SideBar
     },
     props:{
-      activeTab: String
+      activeTab: {
+        type: String,
+      }
     },
   };
   </script>

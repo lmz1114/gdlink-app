@@ -16,7 +16,8 @@ const CategoryService = {
 
     async createCategory(categoryName, color, accessibility) {
         try {
-            
+            accessibility = accessibility.join(',');
+            console.log(accessibility);
             return await CategoryDAO.createCategory(categoryName, color, accessibility);
         } catch (error) {
             console.error('Service Error:', error);
@@ -31,6 +32,7 @@ const CategoryService = {
         if (!categoryName || !color ) {
             throw new Error('All fields (categoryName, color) are required.');
         }
+        accessibility = accessibility.join(',');
         return await CategoryDAO.updateCategory(categoryId, categoryName, color, accessibility);
     },
     

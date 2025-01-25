@@ -19,7 +19,7 @@ const NotificationDAO = {
     async getReceiversToNotify(resourceId) {
         const conn = await getConnection();
         try {
-            const query = `SELECT receiver_id FROM sharing WHERE resource_id = ?;`;
+            const query = `SELECT receiver_email AS email FROM sharing WHERE resource_id = ?;`;
             const rows = await conn.query(query, [resourceId]);
             return rows.map(snakeToCamel);
         } catch (error) {
@@ -33,12 +33,15 @@ const NotificationDAO = {
     async getSharerToNotify(resourceId) {
         const conn = await getConnection();
         try {
-            const query = 'SELECT sharer_id FROM resources WHERE resource_id = ?';
+            const query = `SELECT u.email AS email, r.sharer_id AS id
+                            FROM resources r
+                            JOIN users u ON r.sharer_id = u.user_id
+                            WHERE r.resource_id = ?;`;
             const rows = await conn.query(query, [resourceId]);
 
             if (rows && rows.length > 0) {
                 const sharer = snakeToCamel(rows[0]); 
-                return sharer.sharerId; 
+                return sharer; 
             }
             return '';
         } catch (error) {
@@ -49,11 +52,11 @@ const NotificationDAO = {
         }
     },
 
-    async createUserNotifications(userId, notificationId) {
+    async createUserNotifications(userEmail, notificationId) {
         const conn = await getConnection();
         try {
-            const query = `INSERT INTO user_notification (user_id, notification_id) VALUES (?, ?)`;
-            const result = await conn.query(query, [userId, notificationId]);
+            const query = `INSERT INTO user_notification (user_email, notification_id) VALUES (?, ?)`;
+            const result = await conn.query(query, [userEmail, notificationId]);
             return result;
         } catch (error) {
             console.error('NotificationDAO Error:', error.message);
@@ -67,10 +70,11 @@ const NotificationDAO = {
         const conn = await getConnection();
         try {
             const query = `
-                SELECT n.notification_id, n.message, n.created_at, un.read_status
+                SELECT n.notification_id, n.message, n.created_at, un.read_status, n.resource_id
                 FROM notifications n INNER JOIN user_notification un
                 ON n.notification_id = un.notification_id
-                WHERE un.user_id = ? ORDER BY n.created_at DESC`;
+                INNER JOIN users u ON un.user_email = u.email
+                WHERE u.user_id = ? ORDER BY un.read_status ASC, n.created_at DESC, n.notification_id DESC`;
             rows = await conn.query(query, [userId]);
             return rows.map(snakeToCamel);
         } catch (error) {
@@ -85,7 +89,10 @@ const NotificationDAO = {
     async markAsRead(notificationId, userId) {
         const conn = await getConnection();
         try {
-            const query = `UPDATE user_notification SET read_status = 1 WHERE notification_id = ? AND user_id = ?`;
+            const query = `UPDATE user_notification un
+                            INNER JOIN users u ON un.user_email = u.email
+                            SET un.read_status = 1
+                            WHERE un.notification_id = ? AND u.user_id = ?;`;
             await conn.query(query, [notificationId, userId]);
         } catch (error) {
             console.error('Error in marking notification as seen:', error);
@@ -99,7 +106,10 @@ const NotificationDAO = {
     async deleteNotification(notificationId, userId) {
         const conn = await getConnection();
         try {
-            const query = `DELETE FROM user_notification WHERE notification_id = ? AND user_id = ?`;
+            const query = `DELETE un
+                            FROM user_notification un
+                            INNER JOIN users u ON un.user_email = u.email
+                            WHERE un.notification_id = ? AND u.user_id = ?;`;
             await conn.query(query, [notificationId, userId]);
         } catch (error) {
             console.error('Error in deleting user notification:', error);

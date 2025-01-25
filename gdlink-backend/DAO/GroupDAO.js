@@ -5,7 +5,7 @@ const GroupDAO = {
     async getGroupList(userId){
         const conn = await getConnection();
         try{
-            const query = `SELECT g.group_id, g.group_name, g.creator, g.created_at, COUNT(m.member_id) AS number_of_members
+            const query = `SELECT g.group_id, g.group_name, g.creator, g.created_at, COUNT(m.member_email) AS number_of_members
                             FROM groups g
                             LEFT JOIN group_members m ON g.group_id = m.group_id
                             WHERE g.creator = ?

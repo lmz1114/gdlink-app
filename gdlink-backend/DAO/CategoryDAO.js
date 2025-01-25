@@ -7,6 +7,11 @@ const CategoryDAO = {
         try{
             const query = 'SELECT * FROM CATEGORY';
             const rows = await conn.query(query);
+
+            for (const row of rows) {
+                row.accessibility = row.accessibility.split(',');
+            }
+            
             return rows.map(snakeToCamel);
         }catch(error){
             console.error('Error occurred while retrieving categories:', error);
@@ -26,14 +31,18 @@ const CategoryDAO = {
             console.log(categoryName, color, accessibility);
             const query = `
                 INSERT INTO category (category_name, color, accessibility)
-                VALUES (?, ?, ?)
+                VALUES (?, ?, ?);
             `;
-            await conn.query(query, [categoryName, color, accessibility]);
-            return { success: true };
+            const result = await conn.query(query, [categoryName, color, accessibility]);
+            if(result.affectedRows>0){
+                return {success: true, message:'Category successfully added.'};
+            }else{
+                return {success: false, message:'Category failed to be added.'};
+            }
         } catch (error) {
             console.error('Error occurred while creating category:', error);
             return {
-                error: true,
+                success: false,
                 message: 'An error occurred while saving the category to the database.',
             };
         } finally {
@@ -54,21 +63,15 @@ const CategoryDAO = {
                 WHERE category_id = ?
             `;
             const updateResult = await conn.query(updateQuery, [categoryName, color, accessibility, categoryId]);
-    
-            // Check if any rows were updated
-            if (updateResult.affectedRows === 0) {
-                throw new Error(`No category found with ID: ${categoryId}`);
-            }
-    
-            // Fetch the updated record to return it
-            const selectQuery = `SELECT * FROM category WHERE category_id = ?`;
-            const [updatedCategory] = await conn.query(selectQuery, [categoryId]);
-    
-            // Commit the transaction
+            
             await conn.commit();
-    
-            return updatedCategory;
-        } catch (error) {
+
+            if(updateResult.affectedRows>0){
+                return {success: true, message:'Category successfully edited.'};
+            }else{
+                return {success: false, message:'Category failed to be edited.'};
+            }
+            } catch (error) {
             // Rollback the transaction in case of an error
             if (conn) await conn.rollback();
             console.error('Error occurred while updating category:', error);
@@ -107,6 +110,13 @@ const CategoryDAO = {
             if (rows.length === 0) {
                 console.log('No category found in database for ID:', categoryId);
                 return null; 
+            }
+
+            if(rows[0].accessibility){
+                rows[0].accessibility = rows[0].accessibility.split(',');
+                console.log(rows);
+            }else{
+                rows[0].accessibility = [];
             }
             return rows; 
         } catch (error) {

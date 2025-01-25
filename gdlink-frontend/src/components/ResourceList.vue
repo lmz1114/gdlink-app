@@ -1,7 +1,7 @@
 <template>
   <div class="container" v-if="displayType === 'card'">
     <div class="grid-layout">
-        <div box-width="180px" v-for="(resource, index) in resources" :key="index"> 
+        <div v-for="(resource, index) in resources" :key="index"> 
           <ResourceBox 
             @click="viewDetails(resource.resourceId, resource.resourceType)"
             :categoryColor="resource.color"
@@ -17,13 +17,14 @@
       <table class="table table-striped table-bordered smaller-font">
         <thead class="text-center align-middle">
           <tr>
-              <th scope="col">Resource No.</th>
-              <th scope="col">Category</th>
-              <th scope="col">Ref.Name</th>
-              <th scope="col">Session-Semester</th>
-              <th scope="col">Description</th>
-              <th scope="col">Owner</th>
-              <th scope="col">Actions</th>
+            <th scope="col" style="width: 10%;">Resource No.</th>
+            <th scope="col" style="width: 15%;">Category</th>
+            <th scope="col" style="width: 20%;">Ref.Name</th>
+            <th scope="col" style="width: 15%;">Session-Semester</th>
+            <th scope="col" style="width: 25%;">Description</th>
+            <th v-if="resourceType == 'share'" scope="col" style="width: 15%;">Share to</th>
+            <th v-if="resourceType == 'receive'" scope="col" style="width: 15%;">Shared by</th>
+            <th scope="col" style="width: 10%;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -33,7 +34,8 @@
             <td class="align-middle">{{ resource.refName }}</td>
             <td class="align-middle">{{ resource.sessem }}</td>
             <td class="align-middle">{{ resource.description }}</td>
-            <td class="align-middle">{{ resource.owner }}</td>
+            <td v-if="resourceType == 'share'" class="align-middle">{{ transformedShareTo(resource.shareTo) }}</td>
+            <td v-if="resourceType == 'receive'" class="align-middle">{{  resource.owner }}</td>
             <td class="align-middle text-center">
             <div class="d-flex justify-content-center align-items-center">
               <button @click="viewDetails(resource.resourceId, resource.resourceType)"
@@ -61,6 +63,10 @@
       displayType: {
         type: String,
         required: true
+      },
+      resourceType: {
+        type: String,
+        required: true
       }
     },
     methods:{
@@ -69,6 +75,24 @@
           this.$emit("viewDetails",resourceId,resourceType);
         }else{
           this.$emit("viewDetails",resourceId);
+        }
+      },
+      transformedShareTo(shareTo) {
+        switch (shareTo) {
+          case 'students':
+            return 'All Students';
+          case 'lecturers':
+            return 'All Lecturer';
+          case 'all':
+            return 'All';
+          case 'office':
+            return 'Academic Office';
+          case 'specific users':
+            return 'Specific Users';
+          case 'specific groups':
+            return 'Specific Groups';
+          default:
+            return 'None';
         }
       },
     }
@@ -115,17 +139,29 @@
     }
 }
 
+@media (min-width: 1616px) {
+    .grid-layout {
+        grid-template-columns: repeat(7, var(--box-width));
+    }
+}
+
+@media (min-width: 1832px) {
+    .grid-layout {
+        grid-template-columns: repeat(8, var(--box-width));
+    }
+}
+
 table.smaller-font {
-  font-size: 0.8rem; /* Adjust the font size */
+  font-size: 0.8rem; 
 }
 
 table.smaller-font th,
 table.smaller-font td {
-  padding: 0.5rem; /* Reduce padding to make rows more compact */
+  padding: 0.5rem; 
 }
 
 table.smaller-font tbody tr {
-  height: 50px; /* Reduce row height */
+  height: 50px; 
 }
 
 </style>
